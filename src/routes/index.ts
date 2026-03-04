@@ -375,12 +375,12 @@ function today_fallback(): string {
 
 const index = new Hono<{ Bindings: Env; Variables: { userId: string; user: User } }>();
 
-index.use("*", authMiddleware);
-
 // ---------------------------------------------------------------------------
-// GET /health
+// GET /health — public, no auth
 // ---------------------------------------------------------------------------
 index.get("/health", (c) => c.json({ ok: true }));
+
+index.use("*", authMiddleware);
 
 // ---------------------------------------------------------------------------
 // GET / — home page

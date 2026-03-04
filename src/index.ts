@@ -2,7 +2,6 @@ import { Hono } from "hono";
 import { errorHandler } from "./middleware/error";
 import authRoutes from "./routes/auth";
 import indexRoutes from "./routes/index";
-import notesRoutes from "./routes/notes";
 import routinesRoutes from "./routes/routines";
 import workoutsRoutes from "./routes/workouts";
 import apiWorkoutsRoutes from "./routes/api/workouts";
@@ -16,7 +15,6 @@ app.onError(errorHandler);
 
 // Route groups
 app.route("/auth", authRoutes);
-app.route("/notes", notesRoutes);
 app.route("/routines", routinesRoutes);
 app.route("/workouts", workoutsRoutes);
 app.route("/api/workouts", apiWorkoutsRoutes);
