@@ -1,0 +1,275 @@
+<div id="lifts-panel">
+
+  {# ── Hidden forms that inputs across the panel associate with ── #}
+
+  {# Complete-workout form (always present; set inputs link via form="complete-form") #}
+  <form id="complete-form" method="POST" action="/complete">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <input type="hidden" name="date"  value="{{ today }}">
+    {# Lift structure fields – must be in flatIdx order #}
+    {% for group in groups %}
+      {% for item in group.items %}
+        <input type="hidden" name="lift_name[]"    value="{{ item.lift_name }}"           form="complete-form">
+        <input type="hidden" name="lift_superset[]" value="{{ item.superset_id if item.superset_id else '' }}" form="complete-form">
+      {% endfor %}
+    {% endfor %}
+  </form>
+
+  {# Superset-grouping form (checkboxes across the panel link here) #}
+  <form id="superset-form" method="POST" action="/override/superset"
+        hx-post="/override/superset" hx-target="#lifts-panel" hx-swap="outerHTML">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+  </form>
+
+  {# ── Lift cards ── #}
+  <div class="space-y-3 mb-4">
+
+    {% if groups | length == 0 %}
+      <p class="text-center text-sm text-gray-400 py-6">
+        No lifts yet today.{% if not completed %} Add one below.{% endif %}
+      </p>
+    {% endif %}
+
+    {% for group in groups %}
+
+      {% if group.type == "standalone" %}
+        {% set item = group.items[0] %}
+        <div class="border border-gray-200 rounded-lg bg-white overflow-hidden">
+
+          {# Card header #}
+          <div class="flex items-start gap-2 px-3 pt-3 pb-2">
+            {% if not completed %}
+              <input type="checkbox" name="item_ids[]" value="{{ item.id }}"
+                     form="superset-form"
+                     class="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 flex-shrink-0">
+            {% endif %}
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-gray-900 text-sm truncate">{{ item.lift_name }}</p>
+              <p class="text-xs text-gray-500">{{ item.reps_min }}–{{ item.reps_max }} reps &times; {{ item.sets }} sets</p>
+            </div>
+            {% if not completed %}
+              <div class="flex gap-1 flex-shrink-0">
+                <form method="POST" action="/override/items/{{ item.id }}/move"
+                      hx-post="/override/items/{{ item.id }}/move"
+                      hx-target="#lifts-panel" hx-swap="outerHTML">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <input type="hidden" name="direction" value="up">
+                  <button type="submit" class="text-gray-400 hover:text-gray-600 p-0.5">&#8593;</button>
+                </form>
+                <form method="POST" action="/override/items/{{ item.id }}/move"
+                      hx-post="/override/items/{{ item.id }}/move"
+                      hx-target="#lifts-panel" hx-swap="outerHTML">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <input type="hidden" name="direction" value="down">
+                  <button type="submit" class="text-gray-400 hover:text-gray-600 p-0.5">&#8595;</button>
+                </form>
+                <form method="POST" action="/override/items/{{ item.id }}/delete"
+                      hx-post="/override/items/{{ item.id }}/delete"
+                      hx-target="#lifts-panel" hx-swap="outerHTML">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <button type="submit" hx-confirm="Remove {{ item.lift_name }} from today?"
+                          class="text-red-400 hover:text-red-600 p-0.5">&times;</button>
+                </form>
+              </div>
+            {% endif %}
+          </div>
+
+          {# Stats #}
+          {% if item.stat and (item.stat.recentDate or item.stat.bestDate) %}
+            <div class="px-3 pb-2 space-y-0.5">
+              {% if item.stat.recentDate %}
+                <p class="text-xs text-gray-400">
+                  <span class="font-medium text-gray-500">Last</span>
+                  {{ item.stat.recentDate }} &middot;
+                  {% for s in item.stat.recentSets %}{{ s.reps }}&times;{{ s.weight }}{% if not loop.last %}, {% endif %}{% endfor %}
+                </p>
+              {% endif %}
+              {% if item.stat.bestDate %}
+                <p class="text-xs text-gray-400">
+                  <span class="font-medium text-gray-500">Best</span>
+                  {{ item.stat.bestDate }} &middot;
+                  {% for s in item.stat.bestSets %}{{ s.reps }}&times;{{ s.weight }}{% if not loop.last %}, {% endif %}{% endfor %}
+                </p>
+              {% endif %}
+            </div>
+          {% endif %}
+
+          {# Inline logging set inputs #}
+          {% if inlineLogging and not completed %}
+            <div class="border-t border-gray-100 px-3 py-2 space-y-1.5">
+              {% for s in range(item.sets) %}
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-gray-400 w-10 flex-shrink-0">Set {{ s + 1 }}</span>
+                  <input type="hidden" name="set_lift[]" value="{{ item.flatIdx }}" form="complete-form">
+                  <input type="number" name="set_reps[]" placeholder="Reps" min="0" max="9999"
+                         form="complete-form"
+                         class="w-full border border-gray-300 rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                  <span class="text-gray-400 text-xs flex-shrink-0">&times;</span>
+                  <input type="number" name="set_weight[]" placeholder="lbs" min="0" max="9999" step="0.5"
+                         form="complete-form"
+                         class="w-full border border-gray-300 rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                  <span class="text-xs text-gray-400 flex-shrink-0">lbs</span>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+        </div>
+
+      {% else %}
+        {# ── Superset group ── #}
+        <div class="border-2 border-indigo-200 rounded-lg overflow-hidden bg-indigo-50">
+
+          <div class="flex items-center justify-between px-3 py-1.5 bg-indigo-100 border-b border-indigo-200">
+            <span class="text-xs font-semibold text-indigo-700 uppercase tracking-wide">Superset</span>
+            {% if not completed %}
+              <div class="flex gap-1">
+                <form method="POST" action="/override/items/{{ group.items[0].id }}/move"
+                      hx-post="/override/items/{{ group.items[0].id }}/move"
+                      hx-target="#lifts-panel" hx-swap="outerHTML" class="inline">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <input type="hidden" name="direction" value="up">
+                  <button type="submit" class="text-indigo-400 hover:text-indigo-700 text-sm px-1">&#8593;</button>
+                </form>
+                <form method="POST" action="/override/items/{{ group.items[0].id }}/move"
+                      hx-post="/override/items/{{ group.items[0].id }}/move"
+                      hx-target="#lifts-panel" hx-swap="outerHTML" class="inline">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <input type="hidden" name="direction" value="down">
+                  <button type="submit" class="text-indigo-400 hover:text-indigo-700 text-sm px-1">&#8595;</button>
+                </form>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="divide-y divide-indigo-100">
+            {% for item in group.items %}
+              <div class="px-3 pt-2.5 pb-2">
+
+                <div class="flex items-start gap-2">
+                  <div class="flex-1 min-w-0">
+                    <p class="font-medium text-gray-900 text-sm truncate">{{ item.lift_name }}</p>
+                    <p class="text-xs text-gray-500">{{ item.reps_min }}–{{ item.reps_max }} reps &times; {{ item.sets }} sets</p>
+                  </div>
+                  {% if not completed %}
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                      <form method="POST" action="/override/items/{{ item.id }}/unsuperset"
+                            hx-post="/override/items/{{ item.id }}/unsuperset"
+                            hx-target="#lifts-panel" hx-swap="outerHTML">
+                        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                        <button type="submit" class="text-xs text-indigo-500 hover:text-indigo-700">Ungroup</button>
+                      </form>
+                      <form method="POST" action="/override/items/{{ item.id }}/delete"
+                            hx-post="/override/items/{{ item.id }}/delete"
+                            hx-target="#lifts-panel" hx-swap="outerHTML">
+                        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                        <button type="submit" hx-confirm="Remove {{ item.lift_name }} from today?"
+                                class="text-red-400 hover:text-red-600">&times;</button>
+                      </form>
+                    </div>
+                  {% endif %}
+                </div>
+
+                {# Stats #}
+                {% if item.stat and (item.stat.recentDate or item.stat.bestDate) %}
+                  <div class="mt-1 space-y-0.5">
+                    {% if item.stat.recentDate %}
+                      <p class="text-xs text-gray-400">
+                        <span class="font-medium text-gray-500">Last</span>
+                        {{ item.stat.recentDate }} &middot;
+                        {% for s in item.stat.recentSets %}{{ s.reps }}&times;{{ s.weight }}{% if not loop.last %}, {% endif %}{% endfor %}
+                      </p>
+                    {% endif %}
+                    {% if item.stat.bestDate %}
+                      <p class="text-xs text-gray-400">
+                        <span class="font-medium text-gray-500">Best</span>
+                        {{ item.stat.bestDate }} &middot;
+                        {% for s in item.stat.bestSets %}{{ s.reps }}&times;{{ s.weight }}{% if not loop.last %}, {% endif %}{% endfor %}
+                      </p>
+                    {% endif %}
+                  </div>
+                {% endif %}
+
+                {# Inline logging set inputs #}
+                {% if inlineLogging and not completed %}
+                  <div class="mt-2 space-y-1.5">
+                    {% for s in range(item.sets) %}
+                      <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-400 w-10 flex-shrink-0">Set {{ s + 1 }}</span>
+                        <input type="hidden" name="set_lift[]" value="{{ item.flatIdx }}" form="complete-form">
+                        <input type="number" name="set_reps[]" placeholder="Reps" min="0" max="9999"
+                               form="complete-form"
+                               class="w-full border border-indigo-200 rounded px-2 py-1 text-sm text-center bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        <span class="text-gray-400 text-xs flex-shrink-0">&times;</span>
+                        <input type="number" name="set_weight[]" placeholder="lbs" min="0" max="9999" step="0.5"
+                               form="complete-form"
+                               class="w-full border border-indigo-200 rounded px-2 py-1 text-sm text-center bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        <span class="text-xs text-gray-400 flex-shrink-0">lbs</span>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+
+              </div>
+            {% endfor %}
+          </div>
+
+        </div>
+      {% endif %}
+
+    {% endfor %}
+
+  </div>
+
+  {# ── Make superset button (2+ standalone items) ── #}
+  {% if not completed and groups | length >= 2 %}
+    <div class="mb-4">
+      <button type="submit" form="superset-form"
+              class="text-sm text-indigo-600 hover:text-indigo-800 border border-indigo-200 hover:border-indigo-400 rounded px-3 py-1.5 transition-colors">
+        Group selected as superset
+      </button>
+    </div>
+  {% endif %}
+
+  {# ── Add lift for today ── #}
+  {% if not completed %}
+    <div class="border border-dashed border-gray-300 rounded-lg p-3 mb-4">
+      <p class="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">Add lift for today</p>
+      <form method="POST" action="/override/items"
+            hx-post="/override/items" hx-target="#lifts-panel" hx-swap="outerHTML"
+            hx-on::after-request="this.reset()">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <div class="flex flex-wrap gap-2 items-center">
+          <input type="text" name="lift_name" placeholder="Lift name" required maxlength="100"
+                 class="flex-1 min-w-32 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <div class="flex items-center gap-1 flex-shrink-0">
+            <input type="number" name="reps_min" value="8" min="1" max="999" required
+                   class="w-14 border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <span class="text-gray-400 text-xs">–</span>
+            <input type="number" name="reps_max" value="12" min="1" max="999" required
+                   class="w-14 border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <span class="text-gray-500 text-xs ml-1">reps</span>
+          </div>
+          <div class="flex items-center gap-1 flex-shrink-0">
+            <input type="number" name="sets" value="3" min="1" max="99" required
+                   class="w-12 border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <span class="text-gray-500 text-xs">sets</span>
+          </div>
+          <button type="submit"
+                  class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium py-1.5 px-3 rounded transition-colors flex-shrink-0">
+            + Add
+          </button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
+
+  {# ── Complete Workout ── #}
+  {% if not completed %}
+    <button type="submit" form="complete-form"
+            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg text-sm transition-colors">
+      Complete Workout
+    </button>
+  {% endif %}
+
+</div>
