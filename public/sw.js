@@ -1,8 +1,10 @@
 // Service Worker — cache-first for static assets, network-first for HTML navigation
 // Increment CACHE_VERSION when making breaking changes to force old caches to clear.
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const CACHE_NAME = `app-${CACHE_VERSION}`;
 
+// Home page is cached so users can see their last routine when offline.
+const HOME_URL = '/';
 const STATIC_ASSET_EXTENSIONS = /\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|otf|webp|avif)(\?.*)?$/i;
 const PRECACHE_URLS = ['/offline.html'];
 
@@ -42,9 +44,16 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Strategy 2: HTML navigation → network-first (try network; fall back to offline.html)
+  // Strategy 2: HTML navigation → network-first
+  //   - For the home page (/): cache the response on success so the last-seen
+  //     routine is available offline. Fall back to cached home, then offline.html.
+  //   - For all other pages: fall back directly to offline.html.
   if (request.mode === 'navigate') {
-    event.respondWith(networkFirstWithOfflineFallback(request));
+    if (url.pathname === HOME_URL) {
+      event.respondWith(networkFirstCacheHome(request));
+    } else {
+      event.respondWith(networkFirstWithOfflineFallback(request));
+    }
     return;
   }
 
@@ -64,6 +73,24 @@ async function cacheFirst(request) {
     cache.put(request, response.clone()); // update in background
   }
   return response;
+}
+
+// Network-first for the home page: saves successful response so the user
+// can see their last routine when they open the app offline.
+async function networkFirstCacheHome(request) {
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    const cached = await caches.match(HOME_URL);
+    if (cached) return cached;
+    const offline = await caches.match('/offline.html');
+    return offline ?? new Response('You are offline.', { status: 503, headers: { 'Content-Type': 'text/plain' } });
+  }
 }
 
 async function networkFirstWithOfflineFallback(request) {

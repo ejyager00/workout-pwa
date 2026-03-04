@@ -1,9 +1,13 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>{{ title | default('App') }}</title>
-<meta name="application-name" content="{{ title | default('App') }}" />
+<title>{{ title | default('Lift Log') }}</title>
+<meta name="application-name" content="Lift Log" />
 <meta name="theme-color" content="#4f46e5" />
 <link rel="manifest" href="/manifest.json" />
+<!-- iOS add-to-home-screen -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Lift Log" />
 <link rel="apple-touch-icon" href="/icons/icon-192.png" />
 <!-- Tailwind CSS — built via `npm run tailwind:build` (src/styles/app.css → public/app.css) -->
 <link rel="stylesheet" href="/app.css" />

@@ -1,9 +1,10 @@
 {
-  "name": "My App",
-  "short_name": "My App",
-  "description": "A Cloudflare Worker CRUD application.",
+  "name": "Lift Log",
+  "short_name": "Lift Log",
+  "description": "Track your strength training workouts, routines, and personal records.",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#4f46e5",
   "icons": [
