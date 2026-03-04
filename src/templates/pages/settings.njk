@@ -1,0 +1,51 @@
+{% extends "base.njk" %}
+
+{% block content %}
+<div class="max-w-lg mx-auto space-y-8">
+
+  <!-- Inline Logging -->
+  <section>
+    <h2 class="text-base font-semibold text-gray-900 mb-3">Workout Logging</h2>
+    <div class="border border-gray-200 rounded-lg p-4">
+      {% include "partials/settings/logging-toggle.njk" %}
+    </div>
+  </section>
+
+  <!-- Webhook -->
+  <section>
+    <h2 class="text-base font-semibold text-gray-900 mb-1">Webhook</h2>
+    <p class="text-sm text-gray-500 mb-3">
+      After completing a workout, we'll POST the workout JSON to this URL.
+    </p>
+    <div class="border border-gray-200 rounded-lg p-4">
+      <form method="POST" action="/settings/webhook">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <div class="flex gap-2">
+          <input type="url" name="webhook_url"
+                 value="{{ userSettings.webhook_url if userSettings.webhook_url else '' }}"
+                 placeholder="https://your-endpoint.com/hook"
+                 class="flex-1 min-w-0 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <button type="submit"
+                  class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium py-2 px-3 rounded transition-colors flex-shrink-0">
+            Save
+          </button>
+        </div>
+        {% if userSettings.webhook_url %}
+          <p class="text-xs text-green-600 mt-2">Webhook active.</p>
+        {% endif %}
+      </form>
+    </div>
+  </section>
+
+  <!-- API Keys -->
+  <section>
+    <h2 class="text-base font-semibold text-gray-900 mb-1">API Keys</h2>
+    <p class="text-sm text-gray-500 mb-3">
+      Use an API key to submit workouts from external devices or scripts.<br>
+      <code class="bg-gray-100 px-1 rounded text-xs">Authorization: ApiKey &lt;key&gt;</code>
+    </p>
+    {% include "partials/settings/api-keys.njk" %}
+  </section>
+
+</div>
+{% endblock %}

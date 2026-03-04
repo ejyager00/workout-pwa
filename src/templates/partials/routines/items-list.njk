@@ -1,0 +1,232 @@
+<div id="items-list">
+
+  {# Hidden superset form — checkboxes/button reference this via form="superset-form" #}
+  <form id="superset-form" method="POST" action="/routines/{{ day }}/superset"
+        hx-post="/routines/{{ day }}/superset"
+        hx-target="#items-list" hx-swap="outerHTML">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+  </form>
+
+  <!-- Lift list -->
+  <div class="space-y-2 mb-4">
+
+    {% if groups | length == 0 %}
+      <p class="text-gray-400 text-sm py-4 text-center">No lifts yet. Add one below.</p>
+    {% endif %}
+
+    {% for group in groups %}
+
+      {% if group.type == "standalone" %}
+        {% set item = group.items[0] %}
+
+        <div class="border border-gray-200 rounded-lg bg-white">
+          <div class="flex items-start gap-2 p-3">
+
+            {# Superset checkbox #}
+            <input type="checkbox" name="item_ids[]" value="{{ item.id }}"
+                   form="superset-form"
+                   class="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 flex-shrink-0">
+
+            {# Edit form #}
+            <form method="POST" action="/routines/{{ day }}/items/{{ item.id }}"
+                  hx-post="/routines/{{ day }}/items/{{ item.id }}"
+                  hx-target="#items-list" hx-swap="outerHTML"
+                  class="flex-1 min-w-0">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <div class="flex flex-wrap gap-2 items-center">
+                <input type="text" name="lift_name" value="{{ item.lift_name }}"
+                       placeholder="Lift name" required maxlength="100"
+                       class="flex-1 min-w-32 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                <div class="flex items-center gap-1 flex-shrink-0">
+                  <input type="number" name="reps_min" value="{{ item.reps_min }}"
+                         min="1" max="999" required
+                         class="w-14 border border-gray-300 rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                  <span class="text-gray-400 text-xs">–</span>
+                  <input type="number" name="reps_max" value="{{ item.reps_max }}"
+                         min="1" max="999" required
+                         class="w-14 border border-gray-300 rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                  <span class="text-gray-500 text-xs ml-1">reps</span>
+                </div>
+                <div class="flex items-center gap-1 flex-shrink-0">
+                  <input type="number" name="sets" value="{{ item.sets }}"
+                         min="1" max="99" required
+                         class="w-12 border border-gray-300 rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                  <span class="text-gray-500 text-xs">sets</span>
+                </div>
+                <button type="submit"
+                        class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium py-1 px-2 rounded transition-colors flex-shrink-0">
+                  Save
+                </button>
+              </div>
+            </form>
+
+            {# Move / delete buttons #}
+            <div class="flex flex-col gap-1 flex-shrink-0">
+              <form method="POST" action="/routines/{{ day }}/items/{{ item.id }}/move"
+                    hx-post="/routines/{{ day }}/items/{{ item.id }}/move"
+                    hx-target="#items-list" hx-swap="outerHTML">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <input type="hidden" name="direction" value="up">
+                <button type="submit" title="Move up"
+                        class="text-gray-400 hover:text-gray-600 p-0.5 leading-none">&#8593;</button>
+              </form>
+              <form method="POST" action="/routines/{{ day }}/items/{{ item.id }}/move"
+                    hx-post="/routines/{{ day }}/items/{{ item.id }}/move"
+                    hx-target="#items-list" hx-swap="outerHTML">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <input type="hidden" name="direction" value="down">
+                <button type="submit" title="Move down"
+                        class="text-gray-400 hover:text-gray-600 p-0.5 leading-none">&#8595;</button>
+              </form>
+              <form method="POST" action="/routines/{{ day }}/items/{{ item.id }}/delete"
+                    hx-post="/routines/{{ day }}/items/{{ item.id }}/delete"
+                    hx-target="#items-list" hx-swap="outerHTML">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <button type="submit" title="Remove lift"
+                        hx-confirm="Remove this lift?"
+                        class="text-red-400 hover:text-red-600 p-0.5 leading-none">&times;</button>
+              </form>
+            </div>
+
+          </div>
+        </div>
+
+      {% else %}
+        {# Superset group #}
+        <div class="border-2 border-indigo-200 rounded-lg bg-indigo-50 overflow-hidden">
+
+          {# Group header with move buttons (move the whole group) #}
+          <div class="flex items-center justify-between px-3 py-1.5 bg-indigo-100 border-b border-indigo-200">
+            <span class="text-xs font-semibold text-indigo-700 uppercase tracking-wide">Superset</span>
+            <div class="flex gap-2">
+              <form method="POST" action="/routines/{{ day }}/items/{{ group.items[0].id }}/move"
+                    hx-post="/routines/{{ day }}/items/{{ group.items[0].id }}/move"
+                    hx-target="#items-list" hx-swap="outerHTML" class="inline">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <input type="hidden" name="direction" value="up">
+                <button type="submit" title="Move group up"
+                        class="text-indigo-500 hover:text-indigo-700 text-sm px-1">&#8593;</button>
+              </form>
+              <form method="POST" action="/routines/{{ day }}/items/{{ group.items[0].id }}/move"
+                    hx-post="/routines/{{ day }}/items/{{ group.items[0].id }}/move"
+                    hx-target="#items-list" hx-swap="outerHTML" class="inline">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <input type="hidden" name="direction" value="down">
+                <button type="submit" title="Move group down"
+                        class="text-indigo-500 hover:text-indigo-700 text-sm px-1">&#8595;</button>
+              </form>
+            </div>
+          </div>
+
+          {# Items within the superset #}
+          <div class="divide-y divide-indigo-100">
+            {% for item in group.items %}
+              <div class="flex items-start gap-2 p-3">
+
+                {# Edit form #}
+                <form method="POST" action="/routines/{{ day }}/items/{{ item.id }}"
+                      hx-post="/routines/{{ day }}/items/{{ item.id }}"
+                      hx-target="#items-list" hx-swap="outerHTML"
+                      class="flex-1 min-w-0">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <div class="flex flex-wrap gap-2 items-center">
+                    <input type="text" name="lift_name" value="{{ item.lift_name }}"
+                           placeholder="Lift name" required maxlength="100"
+                           class="flex-1 min-w-32 border border-indigo-200 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white">
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                      <input type="number" name="reps_min" value="{{ item.reps_min }}"
+                             min="1" max="999" required
+                             class="w-14 border border-indigo-200 rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white">
+                      <span class="text-gray-400 text-xs">–</span>
+                      <input type="number" name="reps_max" value="{{ item.reps_max }}"
+                             min="1" max="999" required
+                             class="w-14 border border-indigo-200 rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white">
+                      <span class="text-gray-500 text-xs ml-1">reps</span>
+                    </div>
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                      <input type="number" name="sets" value="{{ item.sets }}"
+                             min="1" max="99" required
+                             class="w-12 border border-indigo-200 rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white">
+                      <span class="text-gray-500 text-xs">sets</span>
+                    </div>
+                    <button type="submit"
+                            class="text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-medium py-1 px-2 rounded transition-colors flex-shrink-0">
+                      Save
+                    </button>
+                  </div>
+                </form>
+
+                {# Ungroup + delete buttons #}
+                <div class="flex flex-col gap-1 flex-shrink-0">
+                  <form method="POST" action="/routines/{{ day }}/items/{{ item.id }}/unsuperset"
+                        hx-post="/routines/{{ day }}/items/{{ item.id }}/unsuperset"
+                        hx-target="#items-list" hx-swap="outerHTML">
+                    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                    <button type="submit" title="Remove from superset"
+                            class="text-xs text-indigo-500 hover:text-indigo-700 p-0.5 leading-none whitespace-nowrap">
+                      Ungroup
+                    </button>
+                  </form>
+                  <form method="POST" action="/routines/{{ day }}/items/{{ item.id }}/delete"
+                        hx-post="/routines/{{ day }}/items/{{ item.id }}/delete"
+                        hx-target="#items-list" hx-swap="outerHTML">
+                    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                    <button type="submit" title="Remove lift"
+                            hx-confirm="Remove this lift?"
+                            class="text-red-400 hover:text-red-600 p-0.5 leading-none">&times;</button>
+                  </form>
+                </div>
+
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+      {% endif %}
+    {% endfor %}
+
+  </div>
+
+  {# Make superset button — only show when there are 2+ standalone items (or any items) #}
+  {% if groups | length >= 2 %}
+    <div class="mb-4">
+      <button type="submit" form="superset-form"
+              class="text-sm text-indigo-600 hover:text-indigo-800 border border-indigo-200 hover:border-indigo-400 rounded px-3 py-1.5 transition-colors">
+        Group selected as superset
+      </button>
+    </div>
+  {% endif %}
+
+  <!-- Add lift form -->
+  <div class="border border-dashed border-gray-300 rounded-lg p-3">
+    <p class="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">Add lift</p>
+    <form method="POST" action="/routines/{{ day }}/items"
+          hx-post="/routines/{{ day }}/items"
+          hx-target="#items-list" hx-swap="outerHTML"
+          hx-on::after-request="this.reset()">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="flex flex-wrap gap-2 items-center">
+        <input type="text" name="lift_name" placeholder="Lift name" required maxlength="100"
+               class="flex-1 min-w-32 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <div class="flex items-center gap-1 flex-shrink-0">
+          <input type="number" name="reps_min" value="8" min="1" max="999" required
+                 class="w-14 border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <span class="text-gray-400 text-xs">–</span>
+          <input type="number" name="reps_max" value="12" min="1" max="999" required
+                 class="w-14 border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <span class="text-gray-500 text-xs ml-1">reps</span>
+        </div>
+        <div class="flex items-center gap-1 flex-shrink-0">
+          <input type="number" name="sets" value="3" min="1" max="99" required
+                 class="w-12 border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <span class="text-gray-500 text-xs">sets</span>
+        </div>
+        <button type="submit"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-1.5 px-3 rounded transition-colors flex-shrink-0">
+          + Add
+        </button>
+      </div>
+    </form>
+  </div>
+
+</div>

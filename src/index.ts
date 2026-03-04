@@ -3,6 +3,10 @@ import { errorHandler } from "./middleware/error";
 import authRoutes from "./routes/auth";
 import indexRoutes from "./routes/index";
 import notesRoutes from "./routes/notes";
+import routinesRoutes from "./routes/routines";
+import workoutsRoutes from "./routes/workouts";
+import apiWorkoutsRoutes from "./routes/api/workouts";
+import settingsRoutes from "./routes/settings";
 import type { Env } from "./types";
 
 const app = new Hono<{ Bindings: Env }>();
@@ -13,6 +17,10 @@ app.onError(errorHandler);
 // Route groups
 app.route("/auth", authRoutes);
 app.route("/notes", notesRoutes);
+app.route("/routines", routinesRoutes);
+app.route("/workouts", workoutsRoutes);
+app.route("/api/workouts", apiWorkoutsRoutes);
+app.route("/settings", settingsRoutes);
 app.route("/", indexRoutes);
 
 // Fall through to static assets for any unmatched routes

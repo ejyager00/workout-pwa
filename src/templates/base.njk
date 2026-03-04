@@ -8,11 +8,12 @@
   {% include "partials/nav.njk" %}
   {% include "partials/header.njk" %}
 
-  <main class="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
+  <main class="flex-1 max-w-5xl mx-auto w-full px-4 py-8 {{ 'pb-24' if user }}">
     {% block content %}{% endblock %}
   </main>
 
   {% include "partials/footer.njk" %}
+  {% include "partials/bottom-nav.njk" %}
 
   <!-- HTMX — https://htmx.org -->
   <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>

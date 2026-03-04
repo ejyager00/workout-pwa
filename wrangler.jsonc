@@ -37,8 +37,8 @@
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "my-app-db",
-			"database_id": "00000000-0000-0000-0000-000000000000" // TODO: replace with real ID
+			"database_name": "workout-pwa-db",
+			"database_id": "4dd97f3f-a533-4cbf-8b9c-42d87c56ea37"
 		}
 	],
 	/**
@@ -48,7 +48,7 @@
 	"kv_namespaces": [
 		{
 			"binding": "SESSIONS",
-			"id": "00000000000000000000000000000000" // TODO: replace with real ID
+			"id": "e38188cef94e48afb94fe0413df6ac5f"
 		}
 	],
 	"observability": {
@@ -62,7 +62,7 @@
    */
 	"env": {
 		"dev": {
-			"name": "my-app-dev",
+			"name": "workout-pwa-dev",
 			"vars": {
 				"ENVIRONMENT": "dev",
 				"TURNSTILE_SITE_KEY": "1x00000000000000000000AA" // Turnstile always-pass test site key
@@ -70,19 +70,19 @@
 			"d1_databases": [
 				{
 					"binding": "DB",
-					"database_name": "my-app-db-dev",
-					"database_id": "00000000-0000-0000-0000-000000000001" // TODO: replace with real ID
+					"database_name": "workout-pwa-db-dev",
+					"database_id": "61b9e3f7-2996-4417-9654-e206e6a9ae77"
 				}
 			],
 			"kv_namespaces": [
 				{
 					"binding": "SESSIONS",
-					"id": "00000000000000000000000000000001" // TODO: replace with real ID
+					"id": "43ed5ceb075548e2a000519eaccf5339"
 				}
 			]
 		},
 		"production": {
-			"name": "my-app",
+			"name": "workout-pwa",
 			"vars": {
 				"ENVIRONMENT": "production",
 				"TURNSTILE_SITE_KEY": "" // TODO: set your Turnstile site key
@@ -90,14 +90,14 @@
 			"d1_databases": [
 				{
 					"binding": "DB",
-					"database_name": "my-app-db",
-					"database_id": "00000000-0000-0000-0000-000000000002" // TODO: replace with real ID
+					"database_name": "workout-pwa-db",
+					"database_id": "4dd97f3f-a533-4cbf-8b9c-42d87c56ea37"
 				}
 			],
 			"kv_namespaces": [
 				{
 					"binding": "SESSIONS",
-					"id": "00000000000000000000000000000002" // TODO: replace with real ID
+					"id": "e38188cef94e48afb94fe0413df6ac5f"
 				}
 			]
 		}

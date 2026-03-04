@@ -1,0 +1,32 @@
+{% extends "base.njk" %}
+
+{% block content %}
+<div class="max-w-lg mx-auto">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-xl font-semibold">Weekly Routines</h2>
+  </div>
+
+  <ul class="divide-y divide-gray-200 border border-gray-200 rounded-lg overflow-hidden">
+    {% for day in days %}
+      <li>
+        <a href="/routines/{{ day.weekday }}"
+           class="flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors">
+          <span class="font-medium text-gray-900">{{ day.name }}</span>
+          <div class="flex items-center gap-2">
+            {% if day.routine and day.routine.name %}
+              <span class="text-sm text-gray-600">{{ day.routine.name }}</span>
+            {% elif day.routine %}
+              <span class="text-sm text-gray-400 italic">Unnamed</span>
+            {% else %}
+              <span class="text-sm text-gray-400">No routine</span>
+            {% endif %}
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}
