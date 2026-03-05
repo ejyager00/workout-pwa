@@ -94,6 +94,7 @@ settings.get("/", async (c) => {
       csrfToken,
       user: c.get("user"),
       userSettings,
+      inlineLogging: userSettings.inline_logging === 1,
       apiKeys,
       newKey: null,
     })

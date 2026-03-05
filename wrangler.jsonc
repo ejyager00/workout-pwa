@@ -65,7 +65,7 @@
 			"name": "workout-pwa-dev",
 			"vars": {
 				"ENVIRONMENT": "dev",
-				"TURNSTILE_SITE_KEY": "1x00000000000000000000AA" // Turnstile always-pass test site key
+				"TURNSTILE_SITE_KEY": "0x4AAAAAAA5HO7emmGjV9DWR"
 			},
 			"d1_databases": [
 				{
@@ -85,7 +85,7 @@
 			"name": "workout-pwa",
 			"vars": {
 				"ENVIRONMENT": "production",
-				"TURNSTILE_SITE_KEY": "" // TODO: set your Turnstile site key
+				"TURNSTILE_SITE_KEY": "0x4AAAAAAA5HO7emmGjV9DWR"
 			},
 			"d1_databases": [
 				{
@@ -98,6 +98,13 @@
 				{
 					"binding": "SESSIONS",
 					"id": "e38188cef94e48afb94fe0413df6ac5f"
+				}
+			],
+			"routes": [
+				{
+					"pattern": "lifts.yager.me",
+					"zone_name": "yager.me",
+					"custom_domain": true
 				}
 			]
 		}

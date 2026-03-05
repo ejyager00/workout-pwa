@@ -951,10 +951,8 @@ var output = "";
 try {
 var parentTemplate = null;
 output += "<meta charset=\"UTF-8\" />\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n<title>";
-output += runtime.suppressValue(env.getFilter("default").call(context, runtime.contextOrFrameLookup(context, frame, "title"),"App"), env.opts.autoescape);
-output += "</title>\n<meta name=\"application-name\" content=\"";
-output += runtime.suppressValue(env.getFilter("default").call(context, runtime.contextOrFrameLookup(context, frame, "title"),"App"), env.opts.autoescape);
-output += "\" />\n<meta name=\"theme-color\" content=\"#4f46e5\" />\n<link rel=\"manifest\" href=\"/manifest.json\" />\n<link rel=\"apple-touch-icon\" href=\"/icons/icon-192.png\" />\n<!-- Tailwind CSS — built via `npm run tailwind:build` (src/styles/app.css → public/app.css) -->\n<link rel=\"stylesheet\" href=\"/app.css\" />\n";
+output += runtime.suppressValue(env.getFilter("default").call(context, runtime.contextOrFrameLookup(context, frame, "title"),"Lift Log"), env.opts.autoescape);
+output += "</title>\n<meta name=\"application-name\" content=\"Lift Log\" />\n<meta name=\"theme-color\" content=\"#4f46e5\" />\n<link rel=\"manifest\" href=\"/manifest.json\" />\n<!-- iOS add-to-home-screen -->\n<meta name=\"apple-mobile-web-app-capable\" content=\"yes\" />\n<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"default\" />\n<meta name=\"apple-mobile-web-app-title\" content=\"Lift Log\" />\n<link rel=\"apple-touch-icon\" href=\"/icons/icon-192.png\" />\n<!-- Tailwind CSS — built via `npm run tailwind:build` (src/styles/app.css → public/app.css) -->\n<link rel=\"stylesheet\" href=\"/app.css\" />\n";
 (parentTemplate ? function(e, c, f, r, cb) { cb(""); } : context.getBlock("head"))(env, context, frame, runtime, function(t_2,t_1) {
 if(t_2) { cb(t_2); return; }
 output += t_1;
@@ -970,7 +968,7 @@ cb(null, output);
 }
 }
 function b_head(env, context, frame, runtime, cb) {
-var lineno = 9;
+var lineno = 13;
 var colno = 3;
 var output = "";
 try {
@@ -1476,7 +1474,7 @@ var colno = 0;
 var output = "";
 try {
 var parentTemplate = null;
-output += "<nav class=\"bg-white border-b border-gray-200\">\n  <div class=\"max-w-5xl mx-auto px-4 py-3 flex items-center justify-between\">\n    <a href=\"/\" class=\"font-semibold text-gray-900 text-lg tracking-tight\">Workout</a>\n    <div class=\"flex gap-4 text-sm items-center\">\n      ";
+output += "<nav class=\"bg-white border-b border-gray-200\">\n  <div class=\"max-w-5xl mx-auto px-4 py-3 flex items-center justify-between\">\n    <a href=\"/\" class=\"font-semibold text-gray-900 text-lg tracking-tight\">Lift Log</a>\n    <div class=\"flex gap-4 text-sm items-center\">\n      ";
 if(runtime.contextOrFrameLookup(context, frame, "user")) {
 output += "\n        <span class=\"text-gray-500 text-xs\">";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "user")),"username"), env.opts.autoescape);
