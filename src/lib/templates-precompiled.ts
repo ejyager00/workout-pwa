@@ -974,7 +974,9 @@ var colno = 0;
 var output = "";
 try {
 var parentTemplate = null;
-output += "<footer class=\"border-t border-gray-200 mt-16 py-8 text-center text-sm text-gray-500 space-y-2\">\n  <p><a href=\"/about\" class=\"hover:underline\">About &amp; Disclaimers</a></p>\n  <p>&copy; ";
+output += "<footer class=\"border-t border-gray-200 mt-16 py-8 text-center text-sm text-gray-500 space-y-2 ";
+output += runtime.suppressValue((runtime.contextOrFrameLookup(context, frame, "user")?"pb-20":""), env.opts.autoescape);
+output += "\">\n  <p><a href=\"/about\" class=\"hover:underline\">About &amp; Disclaimers</a></p>\n  <p>&copy; ";
 output += runtime.suppressValue(env.getFilter("default").call(context, runtime.contextOrFrameLookup(context, frame, "year"),"2026"), env.opts.autoescape);
 output += " Lift Log. Built with <a href=\"https://github.com/ejyager00/htmx-crud-worker-template\">Cloudflare Workers</a>.</p>\n</footer>\n";
 if(parentTemplate) {
