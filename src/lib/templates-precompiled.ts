@@ -146,6 +146,55 @@ root: root
 };
 
   })(),
+  "pages/about.njk": (function() {
+function root(env, context, frame, runtime, cb) {
+var lineno = 0;
+var colno = 0;
+var output = "";
+try {
+var parentTemplate = null;
+env.getTemplate("base.njk", true, "pages/about.njk", false, function(t_3,t_2) {
+if(t_3) { cb(t_3); return; }
+parentTemplate = t_2
+for(var t_1 in parentTemplate.blocks) {
+context.addBlock(t_1, parentTemplate.blocks[t_1]);
+}
+output += "\n\n";
+(parentTemplate ? function(e, c, f, r, cb) { cb(""); } : context.getBlock("content"))(env, context, frame, runtime, function(t_5,t_4) {
+if(t_5) { cb(t_5); return; }
+output += t_4;
+output += "\n";
+if(parentTemplate) {
+parentTemplate.rootRenderFunc(env, context, frame, runtime, cb);
+} else {
+cb(null, output);
+}
+})});
+} catch (e) {
+  cb(runtime.handleError(e, lineno, colno));
+}
+}
+function b_content(env, context, frame, runtime, cb) {
+var lineno = 2;
+var colno = 3;
+var output = "";
+try {
+var frame = frame.push(true);
+output += "\n<div class=\"max-w-2xl mx-auto space-y-12\">\n\n  <div>\n    <h1 class=\"text-2xl font-bold text-gray-900 mb-2\">About Lift Log</h1>\n    <p class=\"text-gray-600\">Lift Log is a personal strength training tracker. Set up your weekly routines, log sets as you work out, and track your best and most recent performance for every lift.</p>\n  </div>\n\n  ";
+output += "\n  <section class=\"space-y-6\">\n    <h2 class=\"text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2\">How it works</h2>\n\n    <div class=\"space-y-2\">\n      <h3 class=\"font-medium text-gray-900\">Routines</h3>\n      <p class=\"text-sm text-gray-600\">A routine is a list of lifts assigned to a specific day of the week. Go to <a href=\"/routines\" class=\"text-indigo-600 hover:underline\">Routines</a> to configure one for each training day. For each lift, you set a name (free text), a rep range (e.g. 8–12), and a set count.</p>\n      <p class=\"text-sm text-gray-600\">Lifts can be grouped into <strong>supersets</strong>: select two or more lifts and tap \"Make superset.\" Supersets are displayed together as a group and move as a unit when reordering.</p>\n    </div>\n\n    <div class=\"space-y-2\">\n      <h3 class=\"font-medium text-gray-900\">Today's workout (Home)</h3>\n      <p class=\"text-sm text-gray-600\">The <a href=\"/\" class=\"text-indigo-600 hover:underline\">Home</a> page loads your routine for today's day of the week. For each lift it shows your <strong>most recent</strong> performance (date + sets) and your <strong>best</strong> performance (the session with the highest single-set volume).</p>\n      <p class=\"text-sm text-gray-600\">You can reorder, add, or remove lifts for today without changing your base routine — those changes are saved as a daily override and only affect the current day.</p>\n      <p class=\"text-sm text-gray-600\">When you're done, tap <strong>Complete Workout</strong> to mark the day done. If inline logging is enabled, your entered sets are saved as a workout record at the same time.</p>\n    </div>\n\n    <div class=\"space-y-2\">\n      <h3 class=\"font-medium text-gray-900\">Logging a workout</h3>\n      <p class=\"text-sm text-gray-600\">There are two ways to log sets:</p>\n      <ul class=\"text-sm text-gray-600 list-disc list-inside space-y-1 ml-1\">\n        <li><strong>Inline logging</strong> (enable in Settings) — set input rows appear directly on the Home page for each lift. Fill them in and tap Complete Workout to save.</li>\n        <li><strong>Log page</strong> — <a href=\"/workouts/new\" class=\"text-indigo-600 hover:underline\">Log a workout</a> independently of your routine. Add any lifts and sets, pick the date, and submit.</li>\n      </ul>\n      <p class=\"text-sm text-gray-600\">All logged workouts update the lift stats cache, so your \"Last\" and \"Best\" numbers on the Home page stay current.</p>\n    </div>\n\n    <div class=\"space-y-2\">\n      <h3 class=\"font-medium text-gray-900\">Settings</h3>\n      <ul class=\"text-sm text-gray-600 space-y-3\">\n        <li>\n          <strong>Inline logging</strong> — Toggle whether set input rows appear on the Home page. When off, the Home page is read-only (useful if you prefer to log separately after your workout).\n        </li>\n        <li>\n          <strong>Webhook URL</strong> — Enter a URL and it will receive a POST request with your workout data as JSON every time you complete a workout. Useful for forwarding data to other services. Delivery is best-effort with no retries.\n        </li>\n        <li>\n          <strong>API keys</strong> — Create named API keys to submit or retrieve workout data from external tools (e.g. a phone shortcut, a Garmin sync script). Keys are shown once at creation — store them securely. You can revoke a key at any time.\n        </li>\n      </ul>\n    </div>\n\n    <div class=\"space-y-2\">\n      <h3 class=\"font-medium text-gray-900\">Public API</h3>\n      <p class=\"text-sm text-gray-600\">Workouts can be read and written via a JSON API at <code class=\"bg-gray-100 px-1 rounded text-xs\">/api/workouts</code>. Authenticate with your session cookie or an <code class=\"bg-gray-100 px-1 rounded text-xs\">Authorization: ApiKey &lt;key&gt;</code> header. Full CRUD is supported: list, get, create, replace, and delete.</p>\n    </div>\n  </section>\n\n  ";
+output += "\n  <section id=\"disclaimers\" class=\"space-y-4\">\n    <h2 class=\"text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2\">Disclaimers</h2>\n\n    <div class=\"bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-3 text-sm text-amber-900\">\n\n      <p><strong>No password recovery.</strong> We have no way to recover or reset your password. If you forget it, your account and all data associated with it are permanently inaccessible. There is no \"forgot password\" flow.</p>\n\n      <p><strong>No guarantees on data.</strong> Lift Log is a personal project provided as-is. We make no guarantees about uptime, data durability, or continued availability. We are not responsible for any loss of data, and we accept no liability for any consequences of using this service.</p>\n\n      <p><strong>Do not reuse passwords.</strong> Use a unique password for this account. We store passwords securely (PBKDF2-SHA256), but no service is completely immune to breaches. A unique password ensures that any compromise here does not affect your other accounts. Use a password manager.</p>\n\n    </div>\n  </section>\n\n</div>\n";
+cb(null, output);
+;
+} catch (e) {
+  cb(runtime.handleError(e, lineno, colno));
+}
+}
+return {
+b_content: b_content,
+root: root
+};
+
+  })(),
   "pages/index.njk": (function() {
 function root(env, context, frame, runtime, cb) {
 var lineno = 0;
@@ -820,7 +869,7 @@ output += "\n\n  <!--\n    Works as a standard HTML form POST (no JS required).\
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
 output += "\" />\n\n    <div>\n      <label for=\"username\" class=\"block text-sm font-medium text-gray-700 mb-1\">\n        Username\n      </label>\n      <input\n        id=\"username\"\n        name=\"username\"\n        type=\"text\"\n        required\n        minlength=\"3\"\n        maxlength=\"254\"\n        pattern=\"[a-zA-Z0-9_.@+\\-]+\"\n        autocomplete=\"username\"\n        class=\"w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500\"\n        placeholder=\"you@example.com\"\n      />\n    </div>\n\n    <div>\n      <label for=\"password\" class=\"block text-sm font-medium text-gray-700 mb-1\">\n        Password\n      </label>\n      <input\n        id=\"password\"\n        name=\"password\"\n        type=\"password\"\n        required\n        minlength=\"8\"\n        maxlength=\"128\"\n        autocomplete=\"new-password\"\n        class=\"w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500\"\n        placeholder=\"At least 8 characters\"\n      />\n    </div>\n\n    <!-- Cloudflare Turnstile widget -->\n    <div\n      class=\"cf-turnstile\"\n      data-sitekey=\"";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "turnstileSiteKey"), env.opts.autoescape);
-output += "\"\n      data-callback=\"onTurnstileSuccess\"\n    ></div>\n    <input type=\"hidden\" name=\"turnstileToken\" id=\"turnstileToken\" />\n\n    <button\n      type=\"submit\"\n      class=\"w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors\"\n    >\n      Sign up\n    </button>\n  </form>\n\n  <p class=\"mt-4 text-sm text-gray-600 text-center\">\n    Already have an account?\n    <a href=\"/auth/login\" class=\"text-indigo-600 hover:underline\">Log in</a>\n  </p>\n</div>\n\n<script src=\"https://challenges.cloudflare.com/turnstile/v0/api.js\" async defer></script>\n<script>\n  function onTurnstileSuccess(token) {\n    document.getElementById('turnstileToken').value = token;\n  }\n</script>\n";
+output += "\"\n      data-callback=\"onTurnstileSuccess\"\n    ></div>\n    <input type=\"hidden\" name=\"turnstileToken\" id=\"turnstileToken\" />\n\n    <button\n      type=\"submit\"\n      class=\"w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors\"\n    >\n      Sign up\n    </button>\n  </form>\n\n  <p class=\"mt-4 text-sm text-gray-600 text-center\">\n    Already have an account?\n    <a href=\"/auth/login\" class=\"text-indigo-600 hover:underline\">Log in</a>\n  </p>\n\n  <p class=\"mt-4 text-xs text-gray-500 text-center leading-relaxed\">\n    Use a <strong>unique password</strong> you don't use elsewhere — there is no password recovery,\n    and forgotten passwords cannot be retrieved.\n    <a href=\"/about#disclaimers\" class=\"text-indigo-500 hover:underline\">Full disclaimers &rarr;</a>\n  </p>\n</div>\n\n<script src=\"https://challenges.cloudflare.com/turnstile/v0/api.js\" async defer></script>\n<script>\n  function onTurnstileSuccess(token) {\n    document.getElementById('turnstileToken').value = token;\n  }\n</script>\n";
 cb(null, output);
 ;
 } catch (e) {
@@ -925,9 +974,9 @@ var colno = 0;
 var output = "";
 try {
 var parentTemplate = null;
-output += "<footer class=\"border-t border-gray-200 mt-16 py-8 text-center text-sm text-gray-500\">\n  <p>&copy; ";
+output += "<footer class=\"border-t border-gray-200 mt-16 py-8 text-center text-sm text-gray-500 space-y-2\">\n  <p><a href=\"/about\" class=\"hover:underline\">About &amp; Disclaimers</a></p>\n  <p>&copy; ";
 output += runtime.suppressValue(env.getFilter("default").call(context, runtime.contextOrFrameLookup(context, frame, "year"),"2026"), env.opts.autoescape);
-output += " My App. Built on Cloudflare Workers.</p>\n</footer>\n";
+output += " Lift Log. Built with <a href=\"https://github.com/ejyager00/htmx-crud-worker-template\">Cloudflare Workers</a>.</p>\n</footer>\n";
 if(parentTemplate) {
 parentTemplate.rootRenderFunc(env, context, frame, runtime, cb);
 } else {

@@ -6,6 +6,7 @@ import routinesRoutes from "./routes/routines";
 import workoutsRoutes from "./routes/workouts";
 import apiWorkoutsRoutes from "./routes/api/workouts";
 import settingsRoutes from "./routes/settings";
+import aboutRoutes from "./routes/about";
 import type { Env } from "./types";
 
 const app = new Hono<{ Bindings: Env }>();
@@ -19,6 +20,7 @@ app.route("/routines", routinesRoutes);
 app.route("/workouts", workoutsRoutes);
 app.route("/api/workouts", apiWorkoutsRoutes);
 app.route("/settings", settingsRoutes);
+app.route("/about", aboutRoutes);
 app.route("/", indexRoutes);
 
 // Fall through to static assets for any unmatched routes

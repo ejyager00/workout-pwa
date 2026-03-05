@@ -1,0 +1,75 @@
+{% extends "base.njk" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-12">
+
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900 mb-2">About Lift Log</h1>
+    <p class="text-gray-600">Lift Log is a personal strength training tracker. Set up your weekly routines, log sets as you work out, and track your best and most recent performance for every lift.</p>
+  </div>
+
+  {# ── How it works ──────────────────────────────────────── #}
+  <section class="space-y-6">
+    <h2 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">How it works</h2>
+
+    <div class="space-y-2">
+      <h3 class="font-medium text-gray-900">Routines</h3>
+      <p class="text-sm text-gray-600">A routine is a list of lifts assigned to a specific day of the week. Go to <a href="/routines" class="text-indigo-600 hover:underline">Routines</a> to configure one for each training day. For each lift, you set a name (free text), a rep range (e.g. 8–12), and a set count.</p>
+      <p class="text-sm text-gray-600">Lifts can be grouped into <strong>supersets</strong>: select two or more lifts and tap "Make superset." Supersets are displayed together as a group and move as a unit when reordering.</p>
+    </div>
+
+    <div class="space-y-2">
+      <h3 class="font-medium text-gray-900">Today's workout (Home)</h3>
+      <p class="text-sm text-gray-600">The <a href="/" class="text-indigo-600 hover:underline">Home</a> page loads your routine for today's day of the week. For each lift it shows your <strong>most recent</strong> performance (date + sets) and your <strong>best</strong> performance (the session with the highest single-set volume).</p>
+      <p class="text-sm text-gray-600">You can reorder, add, or remove lifts for today without changing your base routine — those changes are saved as a daily override and only affect the current day.</p>
+      <p class="text-sm text-gray-600">When you're done, tap <strong>Complete Workout</strong> to mark the day done. If inline logging is enabled, your entered sets are saved as a workout record at the same time.</p>
+    </div>
+
+    <div class="space-y-2">
+      <h3 class="font-medium text-gray-900">Logging a workout</h3>
+      <p class="text-sm text-gray-600">There are two ways to log sets:</p>
+      <ul class="text-sm text-gray-600 list-disc list-inside space-y-1 ml-1">
+        <li><strong>Inline logging</strong> (enable in Settings) — set input rows appear directly on the Home page for each lift. Fill them in and tap Complete Workout to save.</li>
+        <li><strong>Log page</strong> — <a href="/workouts/new" class="text-indigo-600 hover:underline">Log a workout</a> independently of your routine. Add any lifts and sets, pick the date, and submit.</li>
+      </ul>
+      <p class="text-sm text-gray-600">All logged workouts update the lift stats cache, so your "Last" and "Best" numbers on the Home page stay current.</p>
+    </div>
+
+    <div class="space-y-2">
+      <h3 class="font-medium text-gray-900">Settings</h3>
+      <ul class="text-sm text-gray-600 space-y-3">
+        <li>
+          <strong>Inline logging</strong> — Toggle whether set input rows appear on the Home page. When off, the Home page is read-only (useful if you prefer to log separately after your workout).
+        </li>
+        <li>
+          <strong>Webhook URL</strong> — Enter a URL and it will receive a POST request with your workout data as JSON every time you complete a workout. Useful for forwarding data to other services. Delivery is best-effort with no retries.
+        </li>
+        <li>
+          <strong>API keys</strong> — Create named API keys to submit or retrieve workout data from external tools (e.g. a phone shortcut, a Garmin sync script). Keys are shown once at creation — store them securely. You can revoke a key at any time.
+        </li>
+      </ul>
+    </div>
+
+    <div class="space-y-2">
+      <h3 class="font-medium text-gray-900">Public API</h3>
+      <p class="text-sm text-gray-600">Workouts can be read and written via a JSON API at <code class="bg-gray-100 px-1 rounded text-xs">/api/workouts</code>. Authenticate with your session cookie or an <code class="bg-gray-100 px-1 rounded text-xs">Authorization: ApiKey &lt;key&gt;</code> header. Full CRUD is supported: list, get, create, replace, and delete.</p>
+    </div>
+  </section>
+
+  {# ── Disclaimers ───────────────────────────────────────── #}
+  <section id="disclaimers" class="space-y-4">
+    <h2 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">Disclaimers</h2>
+
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-3 text-sm text-amber-900">
+
+      <p><strong>No password recovery.</strong> We have no way to recover or reset your password. If you forget it, your account and all data associated with it are permanently inaccessible. There is no "forgot password" flow.</p>
+
+      <p><strong>No guarantees on data.</strong> Lift Log is a personal project provided as-is. We make no guarantees about uptime, data durability, or continued availability. We are not responsible for any loss of data, and we accept no liability for any consequences of using this service.</p>
+
+      <p><strong>Do not reuse passwords.</strong> Use a unique password for this account. We store passwords securely (PBKDF2-SHA256), but no service is completely immune to breaches. A unique password ensures that any compromise here does not affect your other accounts. Use a password manager.</p>
+
+    </div>
+  </section>
+
+</div>
+{% endblock %}
