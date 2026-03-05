@@ -586,34 +586,41 @@ index.post("/complete", csrfMiddleware, async (c) => {
     }
   }
 
-  // Mark (or create) the override as completed
-  const overrideRow = await c.env.DB
-    .prepare("SELECT id FROM daily_overrides WHERE user_id = ? AND date = ?")
-    .bind(userId, today)
-    .first<{ id: string }>();
+  // Snapshot today's routine into an override if one doesn't exist yet, so we
+  // always have the full ordered item list (for the webhook payload and records).
+  const { id: overrideId, items: overrideItems } = await getOrSnapshotOverride(
+    c.env.DB, userId, today, weekday
+  );
 
-  if (overrideRow) {
-    await c.env.DB
-      .prepare("UPDATE daily_overrides SET completed = 1, updated_at = ? WHERE id = ?")
-      .bind(now, overrideRow.id)
-      .run();
-  } else {
-    const routine = await c.env.DB
-      .prepare("SELECT id FROM routines WHERE user_id = ? AND weekday = ?")
-      .bind(userId, weekday)
-      .first<{ id: string }>();
-    await c.env.DB
-      .prepare(
-        "INSERT INTO daily_overrides (id, user_id, date, routine_id, items_json, completed, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 1, ?, ?)"
-      )
-      .bind(crypto.randomUUID(), userId, today, routine?.id ?? null, "[]", now, now)
-      .run();
-  }
+  await c.env.DB
+    .prepare("UPDATE daily_overrides SET completed = 1, updated_at = ? WHERE id = ?")
+    .bind(now, overrideId)
+    .run();
 
   // Fire webhook (best-effort, non-blocking)
   const webhookUrl = settings?.webhook_url;
   if (webhookUrl) {
-    const payload = JSON.stringify({ date: today, completed: true, workout_id: workoutId });
+    // Sort by position to guarantee execution order in the payload.
+    // superset_id links items that are performed as a superset — items sharing
+    // the same superset_id are interleaved set-for-set before moving on.
+    const routine = overrideItems
+      .slice()
+      .sort((a, b) => a.position - b.position)
+      .map((item) => ({
+        position: item.position,
+        lift_name: item.lift_name,
+        superset_id: item.superset_id,
+        sets: item.sets,
+        reps_min: item.reps_min,
+        reps_max: item.reps_max,
+      }));
+
+    const payload = JSON.stringify({
+      date: today,
+      completed: true,
+      workout_id: workoutId,
+      routine,
+    });
     c.executionCtx.waitUntil(
       fetch(webhookUrl, {
         method: "POST",
