@@ -55,10 +55,17 @@
 		"enabled": true
 	},
 	/**
-   * Environment-specific overrides.
+   * Top-level vars — applied when deploying without --env (e.g. CI pipeline).
    * Secrets (JWT_SECRET, TURNSTILE_SECRET_KEY) are NOT set here — use:
-   *   wrangler secret put JWT_SECRET --env dev
+   *   wrangler secret put JWT_SECRET
    *   wrangler secret put JWT_SECRET --env production
+   */
+	"vars": {
+		"ENVIRONMENT": "production",
+		"TURNSTILE_SITE_KEY": "0x4AAAAAAA5HO7emmGjV9DWR"
+	},
+	/**
+   * Environment-specific overrides.
    */
 	"env": {
 		"dev": {
