@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const SignupSchema = z.object({
-  username: z.string().min(3).max(32).regex(/^[a-zA-Z0-9_]+$/),
+  username: z.string().min(3).max(254).regex(/^[a-zA-Z0-9_.@+-]+$/),
   password: z.string().min(8).max(128),
   turnstileToken: z.string().min(1),
 });
