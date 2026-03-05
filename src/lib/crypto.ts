@@ -3,7 +3,7 @@
  * No Node.js crypto — works in the Cloudflare Workers runtime.
  */
 
-const ITERATIONS = 300_000;
+const ITERATIONS = 100_000; // Cloudflare Workers WebCrypto caps PBKDF2 at 100,000
 const HASH_ALG = "SHA-256";
 const KEY_LENGTH = 32; // bytes
 
