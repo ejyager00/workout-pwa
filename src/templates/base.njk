@@ -18,6 +18,16 @@
   <!-- HTMX — https://htmx.org -->
   <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
   <script>
+    // Swap 4xx error responses so form validation errors are displayed
+    htmx.config.responseHandling = [
+      {code:"204", swap: false},
+      {code:"[23]..", swap: true},
+      {code:"4..", swap: true},
+      {code:"5..", swap: false, error: true},
+      {code:".*", swap: false}
+    ];
+  </script>
+  <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js');
     }
