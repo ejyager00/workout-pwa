@@ -236,6 +236,7 @@ auth.post("/logout", csrfMiddleware, async (c) => {
 
   deleteCookie(c, "access_token", { path: "/" });
   deleteCookie(c, "refresh_token", { path: "/" });
+  deleteCookie(c, "dark_mode", { path: "/" });
 
   return c.redirect("/auth/login", 302);
 });
@@ -271,9 +272,12 @@ auth.post("/refresh", async (c) => {
 // ---------------------------------------------------------------------------
 
 async function issueTokens(c: AuthContext, userId: string, username: string): Promise<void> {
-  const [accessToken, refreshToken] = await Promise.all([
+  const [accessToken, refreshToken, settings] = await Promise.all([
     signJwt({ sub: userId, username }, c.env.JWT_SECRET, ACCESS_TOKEN_TTL),
     generateRefreshToken(),
+    c.env.DB.prepare("SELECT dark_mode FROM user_settings WHERE user_id = ?")
+      .bind(userId)
+      .first<{ dark_mode: number }>(),
   ]);
 
   // Persist refresh token in KV
@@ -287,6 +291,12 @@ async function issueTokens(c: AuthContext, userId: string, username: string): Pr
   });
   setCookie(c, "refresh_token", refreshToken, {
     ...cookieOpts,
+    maxAge: REFRESH_TOKEN_TTL,
+  });
+  // Non-HttpOnly so the client-side head script can read it
+  setCookie(c, "dark_mode", String(settings?.dark_mode ?? 0), {
+    path: "/",
+    sameSite: "Lax",
     maxAge: REFRESH_TOKEN_TTL,
   });
 }

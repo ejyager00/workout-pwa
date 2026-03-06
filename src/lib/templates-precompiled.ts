@@ -11,7 +11,7 @@ var colno = 0;
 var output = "";
 try {
 var parentTemplate = null;
-output += "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <!-- Apply dark class before CSS loads to prevent flash of unstyled content -->\n  <script>(function(){if(localStorage.getItem('dark_mode')==='1')document.documentElement.classList.add('dark');}());</script>\n  ";
+output += "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <!-- Apply dark class before CSS loads to prevent flash of unstyled content -->\n  <script>(function(){var m=document.cookie.match(/(?:^|;\\s*)dark_mode=1(?:;|$)/);if(m)document.documentElement.classList.add('dark');}());</script>\n  ";
 var tasks = [];
 tasks.push(
 function(callback) {
@@ -996,9 +996,9 @@ try {
 var parentTemplate = null;
 output += "<footer class=\"border-t border-gray-200 mt-16 ";
 output += runtime.suppressValue((runtime.contextOrFrameLookup(context, frame, "user")?"pt-8 pb-24":"py-8"), env.opts.autoescape);
-output += " text-center text-sm text-gray-500 space-y-2\">\n  <p><a href=\"/about\" class=\"hover:underline\">About &amp; Disclaimers</a></p>\n  <p>&copy; ";
+output += " text-center text-sm text-gray-500 space-y-2\">\n  <p><a href=\"/about\" class=\"text-indigo-600 hover:text-indigo-700 hover:underline\">About &amp; Disclaimers</a></p>\n  <p>&copy; ";
 output += runtime.suppressValue(env.getFilter("default").call(context, runtime.contextOrFrameLookup(context, frame, "year"),"2026"), env.opts.autoescape);
-output += " Lift Log. Built with <a href=\"https://github.com/ejyager00/htmx-crud-worker-template\">Cloudflare Workers</a>.</p>\n</footer>\n";
+output += " Lift Log. <a href=\"https://github.com/ejyager00/workout-pwa\" class=\"text-indigo-600 hover:text-indigo-700 hover:underline\">Open source.</a> Built with <a href=\"https://github.com/ejyager00/htmx-crud-worker-template\">Cloudflare Workers</a>.</p>\n</footer>\n";
 if(parentTemplate) {
 parentTemplate.rootRenderFunc(env, context, frame, runtime, cb);
 } else {
@@ -1890,9 +1890,9 @@ output += "\"\n            role=\"switch\" aria-checked=\"";
 output += runtime.suppressValue((runtime.contextOrFrameLookup(context, frame, "darkMode")?"true":"false"), env.opts.autoescape);
 output += "\">\n      <span class=\"pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ";
 output += runtime.suppressValue((runtime.contextOrFrameLookup(context, frame, "darkMode")?"translate-x-5":"translate-x-0"), env.opts.autoescape);
-output += "\"></span>\n    </button>\n  </form>\n</div>\n<script>\n  var on = ";
+output += "\"></span>\n    </button>\n  </form>\n</div>\n<script>\n  document.documentElement.classList.toggle('dark', ";
 output += runtime.suppressValue((runtime.contextOrFrameLookup(context, frame, "darkMode")?"true":"false"), env.opts.autoescape);
-output += ";\n  document.documentElement.classList.toggle('dark', on);\n  localStorage.setItem('dark_mode', on ? '1' : '0');\n</script>\n";
+output += ");\n</script>\n";
 if(parentTemplate) {
 parentTemplate.rootRenderFunc(env, context, frame, runtime, cb);
 } else {

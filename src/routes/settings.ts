@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { setCookie } from "hono/cookie";
 import { authMiddleware } from "../middleware/auth";
 import { csrfMiddleware } from "../middleware/csrf";
 import { ensureCsrfCookie } from "../lib/csrf";
@@ -143,6 +144,11 @@ settings.post("/dark-mode", csrfMiddleware, async (c) => {
     .bind(newValue, now, userId)
     .run();
 
+  setCookie(c, "dark_mode", String(newValue), {
+    path: "/",
+    sameSite: "Lax",
+    maxAge: newValue === 1 ? 7 * 24 * 60 * 60 : 0,
+  });
   const csrfToken = ensureCsrfCookie(c);
   return c.html(
     render("partials/settings/dark-mode-toggle.njk", {
