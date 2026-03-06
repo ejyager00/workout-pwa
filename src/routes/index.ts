@@ -148,7 +148,7 @@ function buildHomeGroups(
     const homeItem: HomeItem = {
       ...item,
       flatIdx: flatIdx++,
-      stat: statsMap.has(item.lift_name) ? parseLiftStat(statsMap.get(item.lift_name)!) : null,
+      stat: statsMap.has(item.lift_name.toLowerCase()) ? parseLiftStat(statsMap.get(item.lift_name.toLowerCase())!) : null,
     };
     if (!item.superset_id) {
       groups.push({ type: "standalone", items: [homeItem] });

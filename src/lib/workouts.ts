@@ -67,15 +67,16 @@ async function updateLiftStats(
   userId: string,
   liftNames: string[]
 ): Promise<void> {
-  for (const liftName of liftNames) {
-    // Fetch every set for this lift across all workouts for this user
+  for (const rawName of liftNames) {
+    const liftName = rawName.toLowerCase();
+    // Fetch every set for this lift across all workouts for this user (case-insensitive)
     const rows = await db
       .prepare(
         `SELECT w.id AS workout_id, w.date, ws.reps, ws.weight
          FROM workout_sets ws
          JOIN workout_lifts wl ON wl.id = ws.workout_lift_id
          JOIN workouts w ON w.id = wl.workout_id
-         WHERE w.user_id = ? AND wl.lift_name = ?
+         WHERE w.user_id = ? AND LOWER(wl.lift_name) = ?
          ORDER BY w.date DESC`
       )
       .bind(userId, liftName)
@@ -177,7 +178,7 @@ export async function createWorkout(
         .prepare(
           "INSERT INTO workout_lifts (id, workout_id, superset_id, position, lift_name, created_at) VALUES (?, ?, ?, ?, ?, ?)"
         )
-        .bind(liftId, id, lift.superset_id ?? null, lift.position, lift.lift_name, now)
+        .bind(liftId, id, lift.superset_id ?? null, lift.position, lift.lift_name.toLowerCase(), now)
     );
     for (const set of lift.sets) {
       stmts.push(
@@ -241,7 +242,7 @@ export async function replaceWorkout(
         .prepare(
           "INSERT INTO workout_lifts (id, workout_id, superset_id, position, lift_name, created_at) VALUES (?, ?, ?, ?, ?, ?)"
         )
-        .bind(liftId, workoutId, lift.superset_id ?? null, lift.position, lift.lift_name, now)
+        .bind(liftId, workoutId, lift.superset_id ?? null, lift.position, lift.lift_name.toLowerCase(), now)
     );
     for (const set of lift.sets) {
       stmts.push(

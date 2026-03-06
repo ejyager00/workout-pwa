@@ -1023,7 +1023,7 @@ try {
 var parentTemplate = null;
 output += "<meta charset=\"UTF-8\" />\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n<title>";
 output += runtime.suppressValue(env.getFilter("default").call(context, runtime.contextOrFrameLookup(context, frame, "title"),"Lift Log"), env.opts.autoescape);
-output += "</title>\n<meta name=\"application-name\" content=\"Lift Log\" />\n<meta name=\"theme-color\" content=\"#4f46e5\" />\n<link rel=\"manifest\" href=\"/manifest.json\" />\n<!-- iOS add-to-home-screen -->\n<meta name=\"apple-mobile-web-app-capable\" content=\"yes\" />\n<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"default\" />\n<meta name=\"apple-mobile-web-app-title\" content=\"Lift Log\" />\n<link rel=\"apple-touch-icon\" href=\"/icons/icon-192.png\" />\n<!-- Tailwind CSS — built via `npm run tailwind:build` (src/styles/app.css → public/app.css) -->\n<link rel=\"stylesheet\" href=\"/app.css\" />\n";
+output += "</title>\n<meta name=\"application-name\" content=\"Lift Log\" />\n<meta name=\"theme-color\" content=\"#4f46e5\" />\n<link rel=\"icon\" href=\"/icons/favicon.ico\" sizes=\"any\" />\n<link rel=\"icon\" href=\"/icons/icon.svg\" type=\"image/svg+xml\" />\n<link rel=\"icon\" type=\"image/png\" sizes=\"32x32\" href=\"/icons/favicon-32x32.png\" />\n<link rel=\"icon\" type=\"image/png\" sizes=\"16x16\" href=\"/icons/favicon-16x16.png\" />\n<link rel=\"manifest\" href=\"/manifest.json\" />\n<!-- iOS add-to-home-screen -->\n<meta name=\"apple-mobile-web-app-capable\" content=\"yes\" />\n<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"default\" />\n<meta name=\"apple-mobile-web-app-title\" content=\"Lift Log\" />\n<link rel=\"apple-touch-icon\" href=\"/icons/apple-touch-icon.png\" />\n<!-- Tailwind CSS — built via `npm run tailwind:build` (src/styles/app.css → public/app.css) -->\n<link rel=\"stylesheet\" href=\"/app.css\" />\n";
 (parentTemplate ? function(e, c, f, r, cb) { cb(""); } : context.getBlock("head"))(env, context, frame, runtime, function(t_2,t_1) {
 if(t_2) { cb(t_2); return; }
 output += t_1;
@@ -1039,7 +1039,7 @@ cb(null, output);
 }
 }
 function b_head(env, context, frame, runtime, cb) {
-var lineno = 13;
+var lineno = 17;
 var colno = 3;
 var output = "";
 try {
