@@ -9,6 +9,7 @@ import type { Env, User } from "../types";
 interface UserSettings {
   user_id: string;
   inline_logging: number;
+  dark_mode: number;
   webhook_url: string | null;
   updated_at: number;
 }
@@ -37,11 +38,11 @@ async function getOrCreateSettings(
   const now = Math.floor(Date.now() / 1000);
   await db
     .prepare(
-      "INSERT INTO user_settings (user_id, inline_logging, webhook_url, updated_at) VALUES (?, 0, NULL, ?)"
+      "INSERT INTO user_settings (user_id, inline_logging, dark_mode, webhook_url, updated_at) VALUES (?, 0, 0, NULL, ?)"
     )
     .bind(userId, now)
     .run();
-  return { user_id: userId, inline_logging: 0, webhook_url: null, updated_at: now };
+  return { user_id: userId, inline_logging: 0, dark_mode: 0, webhook_url: null, updated_at: now };
 }
 
 async function listApiKeys(db: D1Database, userId: string): Promise<ApiKeyRow[]> {
@@ -95,6 +96,7 @@ settings.get("/", async (c) => {
       user: c.get("user"),
       userSettings,
       inlineLogging: userSettings.inline_logging === 1,
+      darkMode: userSettings.dark_mode === 1,
       apiKeys,
       newKey: null,
     })
@@ -121,6 +123,35 @@ settings.post("/logging", csrfMiddleware, async (c) => {
   return c.html(
     render("partials/settings/logging-toggle.njk", {
       inlineLogging: newValue === 1,
+      csrfToken,
+    })
+  );
+});
+
+// ---------------------------------------------------------------------------
+// POST /settings/dark-mode — toggle dark mode (htmx)
+// ---------------------------------------------------------------------------
+settings.post("/dark-mode", csrfMiddleware, async (c) => {
+  const userId = c.get("userId");
+  const current = await getOrCreateSettings(c.env.DB, userId);
+  const newValue = current.dark_mode === 1 ? 0 : 1;
+  const now = Math.floor(Date.now() / 1000);
+
+  await c.env.DB.prepare(
+    "UPDATE user_settings SET dark_mode = ?, updated_at = ? WHERE user_id = ?"
+  )
+    .bind(newValue, now, userId)
+    .run();
+
+  const csrfToken = ensureCsrfCookie(c);
+  const maxAge = newValue === 1 ? 31536000 : 0;
+  c.header(
+    "Set-Cookie",
+    `dark_mode=${newValue}; Path=/; SameSite=Lax; Max-Age=${maxAge}`
+  );
+  return c.html(
+    render("partials/settings/dark-mode-toggle.njk", {
+      darkMode: newValue === 1,
       csrfToken,
     })
   );

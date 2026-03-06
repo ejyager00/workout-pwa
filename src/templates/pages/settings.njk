@@ -3,6 +3,14 @@
 {% block content %}
 <div class="max-w-lg mx-auto space-y-8">
 
+  <!-- Appearance -->
+  <section>
+    <h2 class="text-base font-semibold text-gray-900 mb-3">Appearance</h2>
+    <div class="border border-gray-200 rounded-lg p-4">
+      {% include "partials/settings/dark-mode-toggle.njk" %}
+    </div>
+  </section>
+
   <!-- Inline Logging -->
   <section>
     <h2 class="text-base font-semibold text-gray-900 mb-3">Workout Logging</h2>

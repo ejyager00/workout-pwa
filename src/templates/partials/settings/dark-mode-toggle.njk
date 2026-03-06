@@ -1,0 +1,20 @@
+<div id="dark-mode-toggle" class="flex items-center justify-between">
+  <div>
+    <p class="text-sm font-medium text-gray-800">Dark mode</p>
+    <p class="text-xs text-gray-500 mt-0.5">Use a dark color scheme.</p>
+  </div>
+  <form method="POST" action="/settings/dark-mode"
+        hx-post="/settings/dark-mode"
+        hx-target="#dark-mode-toggle"
+        hx-swap="outerHTML">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <button type="submit"
+            class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 {{ 'bg-indigo-600' if darkMode else 'bg-gray-200' }}"
+            role="switch" aria-checked="{{ 'true' if darkMode else 'false' }}">
+      <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ 'translate-x-5' if darkMode else 'translate-x-0' }}"></span>
+    </button>
+  </form>
+</div>
+<script>
+  document.documentElement.classList.toggle('dark', {{ 'true' if darkMode else 'false' }});
+</script>
