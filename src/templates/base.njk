@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <!-- Apply dark class before CSS loads to prevent flash of unstyled content -->
-  <script>(function(){var m=document.cookie.match(/(?:^|;\s*)dark_mode=([01])/);if(m&&m[1]==='1')document.documentElement.classList.add('dark');}());</script>
+  <script>(function(){if(localStorage.getItem('dark_mode')==='1')document.documentElement.classList.add('dark');}());</script>
   {% include "partials/head.njk" %}
 </head>
 <body class="bg-white text-gray-900 min-h-screen flex flex-col">

@@ -144,11 +144,6 @@ settings.post("/dark-mode", csrfMiddleware, async (c) => {
     .run();
 
   const csrfToken = ensureCsrfCookie(c);
-  const maxAge = newValue === 1 ? 31536000 : 0;
-  c.header(
-    "Set-Cookie",
-    `dark_mode=${newValue}; Path=/; SameSite=Lax; Max-Age=${maxAge}`
-  );
   return c.html(
     render("partials/settings/dark-mode-toggle.njk", {
       darkMode: newValue === 1,

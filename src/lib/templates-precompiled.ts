@@ -11,7 +11,7 @@ var colno = 0;
 var output = "";
 try {
 var parentTemplate = null;
-output += "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  ";
+output += "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <!-- Apply dark class before CSS loads to prevent flash of unstyled content -->\n  <script>(function(){if(localStorage.getItem('dark_mode')==='1')document.documentElement.classList.add('dark');}());</script>\n  ";
 var tasks = [];
 tasks.push(
 function(callback) {
@@ -129,7 +129,7 @@ cb(null, output);
 }
 }
 function b_content(env, context, frame, runtime, cb) {
-var lineno = 11;
+var lineno = 13;
 var colno = 7;
 var output = "";
 try {
@@ -762,11 +762,11 @@ var colno = 3;
 var output = "";
 try {
 var frame = frame.push(true);
-output += "\n<div class=\"max-w-lg mx-auto space-y-8\">\n\n  <!-- Inline Logging -->\n  <section>\n    <h2 class=\"text-base font-semibold text-gray-900 mb-3\">Workout Logging</h2>\n    <div class=\"border border-gray-200 rounded-lg p-4\">\n      ";
+output += "\n<div class=\"max-w-lg mx-auto space-y-8\">\n\n  <!-- Appearance -->\n  <section>\n    <h2 class=\"text-base font-semibold text-gray-900 mb-3\">Appearance</h2>\n    <div class=\"border border-gray-200 rounded-lg p-4\">\n      ";
 var tasks = [];
 tasks.push(
 function(callback) {
-env.getTemplate("partials/settings/logging-toggle.njk", false, "pages/settings.njk", false, function(t_7,t_6) {
+env.getTemplate("partials/settings/dark-mode-toggle.njk", false, "pages/settings.njk", false, function(t_7,t_6) {
 if(t_7) { cb(t_7); return; }
 callback(null,t_6);});
 });
@@ -775,6 +775,26 @@ function(template, callback){
 template.render(context.getVariables(), frame, function(t_9,t_8) {
 if(t_9) { cb(t_9); return; }
 callback(null,t_8);});
+});
+tasks.push(
+function(result, callback){
+output += result;
+callback(null);
+});
+env.waterfall(tasks, function(){
+output += "\n    </div>\n  </section>\n\n  <!-- Inline Logging -->\n  <section>\n    <h2 class=\"text-base font-semibold text-gray-900 mb-3\">Workout Logging</h2>\n    <div class=\"border border-gray-200 rounded-lg p-4\">\n      ";
+var tasks = [];
+tasks.push(
+function(callback) {
+env.getTemplate("partials/settings/logging-toggle.njk", false, "pages/settings.njk", false, function(t_11,t_10) {
+if(t_11) { cb(t_11); return; }
+callback(null,t_10);});
+});
+tasks.push(
+function(template, callback){
+template.render(context.getVariables(), frame, function(t_13,t_12) {
+if(t_13) { cb(t_13); return; }
+callback(null,t_12);});
 });
 tasks.push(
 function(result, callback){
@@ -795,15 +815,15 @@ output += "\n      </form>\n    </div>\n  </section>\n\n  <!-- API Keys -->\n  <
 var tasks = [];
 tasks.push(
 function(callback) {
-env.getTemplate("partials/settings/api-keys.njk", false, "pages/settings.njk", false, function(t_11,t_10) {
-if(t_11) { cb(t_11); return; }
-callback(null,t_10);});
+env.getTemplate("partials/settings/api-keys.njk", false, "pages/settings.njk", false, function(t_15,t_14) {
+if(t_15) { cb(t_15); return; }
+callback(null,t_14);});
 });
 tasks.push(
 function(template, callback){
-template.render(context.getVariables(), frame, function(t_13,t_12) {
-if(t_13) { cb(t_13); return; }
-callback(null,t_12);});
+template.render(context.getVariables(), frame, function(t_17,t_16) {
+if(t_17) { cb(t_17); return; }
+callback(null,t_16);});
 });
 tasks.push(
 function(result, callback){
@@ -813,7 +833,7 @@ callback(null);
 env.waterfall(tasks, function(){
 output += "\n  </section>\n\n</div>\n";
 cb(null, output);
-})});
+})})});
 } catch (e) {
   cb(runtime.handleError(e, lineno, colno));
 }
@@ -974,9 +994,9 @@ var colno = 0;
 var output = "";
 try {
 var parentTemplate = null;
-output += "<footer class=\"border-t border-gray-200 mt-16 py-8 text-center text-sm text-gray-500 space-y-2 ";
-output += runtime.suppressValue((runtime.contextOrFrameLookup(context, frame, "user")?"pb-20":""), env.opts.autoescape);
-output += "\">\n  <p><a href=\"/about\" class=\"hover:underline\">About &amp; Disclaimers</a></p>\n  <p>&copy; ";
+output += "<footer class=\"border-t border-gray-200 mt-16 ";
+output += runtime.suppressValue((runtime.contextOrFrameLookup(context, frame, "user")?"pt-8 pb-24":"py-8"), env.opts.autoescape);
+output += " text-center text-sm text-gray-500 space-y-2\">\n  <p><a href=\"/about\" class=\"hover:underline\">About &amp; Disclaimers</a></p>\n  <p>&copy; ";
 output += runtime.suppressValue(env.getFilter("default").call(context, runtime.contextOrFrameLookup(context, frame, "year"),"2026"), env.opts.autoescape);
 output += " Lift Log. Built with <a href=\"https://github.com/ejyager00/htmx-crud-worker-template\">Cloudflare Workers</a>.</p>\n</footer>\n";
 if(parentTemplate) {
@@ -1840,6 +1860,39 @@ output += "\n    </ul>\n  ";
 output += "\n\n  <!-- Add new key -->\n  <div class=\"border-t border-gray-200 bg-gray-50 px-4 py-3\">\n    <form method=\"POST\" action=\"/settings/api-keys\"\n          hx-post=\"/settings/api-keys\"\n          hx-target=\"#api-keys-section\"\n          hx-swap=\"outerHTML\"\n          hx-on::after-request=\"this.reset()\">\n      <input type=\"hidden\" name=\"_csrf\" value=\"";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
 output += "\">\n      <div class=\"flex gap-2\">\n        <input type=\"text\" name=\"name\" placeholder=\"Key name (e.g. Garmin sync)\"\n               required maxlength=\"80\"\n               class=\"flex-1 min-w-0 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500\">\n        <button type=\"submit\"\n                class=\"flex-shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-2 px-3 rounded transition-colors\">\n          Create\n        </button>\n      </div>\n    </form>\n  </div>\n\n</div>\n";
+if(parentTemplate) {
+parentTemplate.rootRenderFunc(env, context, frame, runtime, cb);
+} else {
+cb(null, output);
+}
+;
+} catch (e) {
+  cb(runtime.handleError(e, lineno, colno));
+}
+}
+return {
+root: root
+};
+
+  })(),
+  "partials/settings/dark-mode-toggle.njk": (function() {
+function root(env, context, frame, runtime, cb) {
+var lineno = 0;
+var colno = 0;
+var output = "";
+try {
+var parentTemplate = null;
+output += "<div id=\"dark-mode-toggle\" class=\"flex items-center justify-between\">\n  <div>\n    <p class=\"text-sm font-medium text-gray-800\">Dark mode</p>\n    <p class=\"text-xs text-gray-500 mt-0.5\">Use a dark color scheme.</p>\n  </div>\n  <form method=\"POST\" action=\"/settings/dark-mode\"\n        hx-post=\"/settings/dark-mode\"\n        hx-target=\"#dark-mode-toggle\"\n        hx-swap=\"outerHTML\">\n    <input type=\"hidden\" name=\"_csrf\" value=\"";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
+output += "\">\n    <button type=\"submit\"\n            class=\"relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ";
+output += runtime.suppressValue((runtime.contextOrFrameLookup(context, frame, "darkMode")?"bg-indigo-600":"bg-gray-200"), env.opts.autoescape);
+output += "\"\n            role=\"switch\" aria-checked=\"";
+output += runtime.suppressValue((runtime.contextOrFrameLookup(context, frame, "darkMode")?"true":"false"), env.opts.autoescape);
+output += "\">\n      <span class=\"pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ";
+output += runtime.suppressValue((runtime.contextOrFrameLookup(context, frame, "darkMode")?"translate-x-5":"translate-x-0"), env.opts.autoescape);
+output += "\"></span>\n    </button>\n  </form>\n</div>\n<script>\n  var on = ";
+output += runtime.suppressValue((runtime.contextOrFrameLookup(context, frame, "darkMode")?"true":"false"), env.opts.autoescape);
+output += ";\n  document.documentElement.classList.toggle('dark', on);\n  localStorage.setItem('dark_mode', on ? '1' : '0');\n</script>\n";
 if(parentTemplate) {
 parentTemplate.rootRenderFunc(env, context, frame, runtime, cb);
 } else {

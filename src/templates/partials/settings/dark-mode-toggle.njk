@@ -16,5 +16,7 @@
   </form>
 </div>
 <script>
-  document.documentElement.classList.toggle('dark', {{ 'true' if darkMode else 'false' }});
+  var on = {{ 'true' if darkMode else 'false' }};
+  document.documentElement.classList.toggle('dark', on);
+  localStorage.setItem('dark_mode', on ? '1' : '0');
 </script>
