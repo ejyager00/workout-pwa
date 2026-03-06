@@ -1,0 +1,39 @@
+{% for workout in workouts %}
+<div class="border border-gray-200 rounded-lg overflow-hidden bg-white">
+  <div class="px-4 py-3 flex items-start justify-between gap-3">
+    <div class="min-w-0 flex-1">
+      <p class="font-medium text-gray-900 text-sm">{{ workout.formatted_date }}</p>
+      <p class="text-xs text-gray-500 mt-0.5 truncate">
+        {% if workout.lift_names %}{{ workout.lift_names }}{% else %}<span class="italic">No lifts</span>{% endif %}
+      </p>
+      <p class="text-xs text-gray-400 mt-0.5">{{ workout.total_sets }} set{{ 's' if workout.total_sets != 1 }}</p>
+    </div>
+    <div class="flex items-center gap-2 flex-shrink-0">
+      <a href="/workouts/{{ workout.id }}/edit"
+         class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Edit</a>
+      <button type="button"
+              hx-get="/workouts/{{ workout.id }}/detail"
+              hx-target="#detail-{{ workout.id }}"
+              hx-swap="innerHTML"
+              hx-indicator="#spinner-{{ workout.id }}"
+              class="text-xs text-gray-500 hover:text-gray-700 font-medium border border-gray-200 rounded px-2 py-1">
+        Details
+        <span id="spinner-{{ workout.id }}" class="htmx-indicator text-gray-400 ml-1">…</span>
+      </button>
+    </div>
+  </div>
+  <div id="detail-{{ workout.id }}"></div>
+</div>
+{% else %}
+<p class="text-center text-sm text-gray-400 py-10">No workouts logged yet.</p>
+{% endfor %}
+
+{% if nextCursor %}
+<div hx-get="/workouts?cursor={{ nextCursor }}"
+     hx-target="this"
+     hx-swap="outerHTML"
+     hx-trigger="click"
+     class="w-full text-center py-3 text-sm text-indigo-600 hover:text-indigo-800 font-medium border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+  Load more
+</div>
+{% endif %}

@@ -354,3 +354,73 @@ export async function listWorkouts(
     total: countRow?.total ?? 0,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Historical workout list (web UI)
+// ---------------------------------------------------------------------------
+
+export interface WorkoutSummary {
+  id: string;
+  date: string;
+  formatted_date: string;
+  notes: string | null;
+  lift_names: string | null;
+  total_sets: number;
+}
+
+function formatWorkoutDate(dateStr: string): string {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const d = new Date(Date.UTC(year, month - 1, day));
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${days[d.getUTCDay()]} ${months[d.getUTCMonth()]} ${day}`;
+}
+
+/**
+ * Lists workouts for the history page UI with cursor-based pagination.
+ * Includes a summary of lift names and total set count per workout.
+ */
+export async function listWorkoutsPage(
+  db: D1Database,
+  userId: string,
+  limit: number,
+  cursor?: { date: string; id: string }
+): Promise<{ workouts: WorkoutSummary[]; nextCursor: { date: string; id: string } | null }> {
+  const cursorFilter = cursor
+    ? "AND (w.date < ? OR (w.date = ? AND w.id < ?))"
+    : "";
+  const cursorBinds: (string | number)[] = cursor
+    ? [cursor.date, cursor.date, cursor.id]
+    : [];
+
+  const rows = await db
+    .prepare(
+      `SELECT
+         w.id, w.date, w.notes,
+         (SELECT GROUP_CONCAT(lift_name, ' · ')
+          FROM (SELECT lift_name FROM workout_lifts WHERE workout_id = w.id ORDER BY position)
+         ) as lift_names,
+         (SELECT COUNT(*)
+          FROM workout_sets ws
+          JOIN workout_lifts wl ON wl.id = ws.workout_lift_id
+          WHERE wl.workout_id = w.id
+         ) as total_sets
+       FROM workouts w
+       WHERE w.user_id = ? ${cursorFilter}
+       ORDER BY w.date DESC, w.id DESC
+       LIMIT ?`
+    )
+    .bind(userId, ...cursorBinds, limit + 1)
+    .all<Omit<WorkoutSummary, "formatted_date">>();
+
+  const hasMore = rows.results.length > limit;
+  const items = hasMore ? rows.results.slice(0, limit) : rows.results;
+  const nextCursor = hasMore
+    ? { date: items[items.length - 1].date, id: items[items.length - 1].id }
+    : null;
+
+  return {
+    workouts: items.map((w) => ({ ...w, formatted_date: formatWorkoutDate(w.date) })),
+    nextCursor,
+  };
+}

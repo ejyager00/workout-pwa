@@ -1,0 +1,17 @@
+{% extends "base.njk" %}
+
+{% block content %}
+<div class="max-w-lg mx-auto">
+
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-xl font-semibold">Workout History</h2>
+    <a href="/workouts/new"
+       class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">+ Log workout</a>
+  </div>
+
+  <div class="space-y-3">
+    {% include "partials/workouts/list-items.njk" %}
+  </div>
+
+</div>
+{% endblock %}

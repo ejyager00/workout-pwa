@@ -1,0 +1,163 @@
+{% extends "base.njk" %}
+
+{% block content %}
+<div class="max-w-lg mx-auto">
+
+  <div class="mb-6">
+    <a href="/workouts" class="text-sm text-gray-500 hover:text-gray-700">&larr; History</a>
+  </div>
+
+  {% if error %}
+    <div class="mb-4 p-3 bg-red-50 border border-red-300 text-red-700 rounded text-sm">
+      {{ error }}
+    </div>
+  {% endif %}
+
+  <form id="workout-form" method="POST" action="/workouts/{{ workout.id }}/edit" class="space-y-6">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    <!-- Date + Notes -->
+    <div class="space-y-3">
+      <div>
+        <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+        <input type="date" id="date" name="date" value="{{ workout.date }}" required
+               class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div>
+        <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Notes <span class="text-gray-400 font-normal">(optional)</span></label>
+        <textarea id="notes" name="notes" rows="2" maxlength="2000"
+                  placeholder="How'd it go?"
+                  class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none">{{ workout.notes if workout.notes }}</textarea>
+      </div>
+    </div>
+
+    <!-- Lifts -->
+    <div>
+      <h3 class="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Lifts</h3>
+      <div id="lifts-container" class="space-y-4"></div>
+      <button type="button" id="add-lift-btn"
+              class="mt-3 w-full border border-dashed border-gray-300 hover:border-indigo-400 text-gray-500 hover:text-indigo-600 rounded-lg py-3 text-sm font-medium transition-colors">
+        + Add Lift
+      </button>
+    </div>
+
+    <button type="submit"
+            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg text-sm transition-colors">
+      Save Changes
+    </button>
+  </form>
+</div>
+
+<!-- Templates (not rendered, cloned by JS) -->
+<template id="lift-template">
+  <div class="lift-section border border-gray-200 rounded-lg overflow-hidden" data-lift-idx="">
+    <div class="bg-gray-50 border-b border-gray-200 px-3 py-2 flex items-center gap-2">
+      <input type="text" name="lift_name[]" placeholder="Lift name (e.g. Squat)" required
+             maxlength="100"
+             class="flex-1 bg-transparent text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none min-w-0">
+      <input type="hidden" name="lift_superset[]" value="">
+      <button type="button" class="remove-lift-btn text-gray-400 hover:text-red-500 text-lg leading-none flex-shrink-0" title="Remove lift">&times;</button>
+    </div>
+    <div class="p-3 space-y-2">
+      <div class="sets-container space-y-2"></div>
+      <button type="button" class="add-set-btn text-xs text-indigo-600 hover:text-indigo-800 font-medium">
+        + Add set
+      </button>
+    </div>
+  </div>
+</template>
+
+<template id="set-template">
+  <div class="set-row flex items-center gap-2">
+    <input type="hidden" name="set_lift[]" value="">
+    <span class="set-label text-xs text-gray-400 w-6 flex-shrink-0 text-center font-medium"></span>
+    <div class="flex items-center gap-1 flex-1">
+      <input type="number" name="set_reps[]" placeholder="Reps" required
+             min="0" max="9999"
+             class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-indigo-500">
+      <span class="text-gray-400 text-xs flex-shrink-0">×</span>
+      <input type="number" name="set_weight[]" placeholder="lbs" required
+             min="0" max="9999" step="0.5"
+             class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-indigo-500">
+      <span class="text-gray-400 text-xs flex-shrink-0">lbs</span>
+    </div>
+    <button type="button" class="remove-set-btn text-gray-300 hover:text-red-500 flex-shrink-0 leading-none"
+            title="Remove set">&times;</button>
+  </div>
+</template>
+
+<script>
+  let liftCount = 0;
+
+  function addSet(liftSection, reps, weight) {
+    const liftIdx = parseInt(liftSection.dataset.liftIdx);
+    const container = liftSection.querySelector('.sets-container');
+    const setIdx = container.querySelectorAll('.set-row').length;
+
+    const tmpl = document.getElementById('set-template').content.cloneNode(true);
+    const row = tmpl.querySelector('.set-row');
+
+    row.querySelector('[name="set_lift[]"]').value = liftIdx;
+    row.querySelector('.set-label').textContent = setIdx + 1;
+
+    if (reps !== undefined) row.querySelector('[name="set_reps[]"]').value = reps;
+    if (weight !== undefined) row.querySelector('[name="set_weight[]"]').value = weight;
+
+    row.querySelector('.remove-set-btn').addEventListener('click', () => {
+      if (container.querySelectorAll('.set-row').length > 1) {
+        row.remove();
+        renumberSets(container);
+      }
+    });
+
+    container.appendChild(tmpl);
+  }
+
+  function renumberSets(container) {
+    container.querySelectorAll('.set-label').forEach((el, i) => {
+      el.textContent = i + 1;
+    });
+  }
+
+  function addLift(liftName, supersetId, sets) {
+    const tmpl = document.getElementById('lift-template').content.cloneNode(true);
+    const section = tmpl.querySelector('.lift-section');
+    const idx = liftCount++;
+
+    section.dataset.liftIdx = idx;
+
+    if (liftName) section.querySelector('[name="lift_name[]"]').value = liftName;
+    if (supersetId) section.querySelector('[name="lift_superset[]"]').value = supersetId;
+
+    section.querySelector('.remove-lift-btn').addEventListener('click', () => {
+      section.remove();
+    });
+
+    section.querySelector('.add-set-btn').addEventListener('click', () => {
+      addSet(section);
+    });
+
+    document.getElementById('lifts-container').appendChild(tmpl);
+
+    if (sets && sets.length > 0) {
+      sets.forEach((s) => addSet(section, s.reps, s.weight));
+    } else {
+      addSet(section);
+    }
+
+    return section;
+  }
+
+  document.getElementById('add-lift-btn').addEventListener('click', () => addLift());
+
+  // Pre-populate from existing workout data
+  const existing = {{ workoutJson | safe }};
+  if (existing && existing.lifts && existing.lifts.length > 0) {
+    existing.lifts.forEach((lift) => {
+      addLift(lift.lift_name, lift.superset_id || '', lift.sets);
+    });
+  } else {
+    addLift();
+  }
+</script>
+{% endblock %}

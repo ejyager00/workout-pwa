@@ -363,7 +363,7 @@ JWT + KV session architecture with API key support:
 | Webhook with structured routine payload | ✅ Done |
 | Bottom nav | ✅ Done |
 | PWA manifest + service worker | ✅ Done |
-| Historical workouts page + edit | 🔲 Not started |
+| Historical workouts page + edit | ✅ Done |
 | Lift library (`lifts` table + reverse_volume) | 🔲 Not started |
 
 ---

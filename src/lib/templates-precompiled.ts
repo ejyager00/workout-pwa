@@ -902,6 +902,137 @@ root: root
 };
 
   })(),
+  "pages/workouts/edit.njk": (function() {
+function root(env, context, frame, runtime, cb) {
+var lineno = 0;
+var colno = 0;
+var output = "";
+try {
+var parentTemplate = null;
+env.getTemplate("base.njk", true, "pages/workouts/edit.njk", false, function(t_3,t_2) {
+if(t_3) { cb(t_3); return; }
+parentTemplate = t_2
+for(var t_1 in parentTemplate.blocks) {
+context.addBlock(t_1, parentTemplate.blocks[t_1]);
+}
+output += "\n\n";
+(parentTemplate ? function(e, c, f, r, cb) { cb(""); } : context.getBlock("content"))(env, context, frame, runtime, function(t_5,t_4) {
+if(t_5) { cb(t_5); return; }
+output += t_4;
+output += "\n";
+if(parentTemplate) {
+parentTemplate.rootRenderFunc(env, context, frame, runtime, cb);
+} else {
+cb(null, output);
+}
+})});
+} catch (e) {
+  cb(runtime.handleError(e, lineno, colno));
+}
+}
+function b_content(env, context, frame, runtime, cb) {
+var lineno = 2;
+var colno = 3;
+var output = "";
+try {
+var frame = frame.push(true);
+output += "\n<div class=\"max-w-lg mx-auto\">\n\n  <div class=\"mb-6\">\n    <a href=\"/workouts\" class=\"text-sm text-gray-500 hover:text-gray-700\">&larr; History</a>\n  </div>\n\n  ";
+if(runtime.contextOrFrameLookup(context, frame, "error")) {
+output += "\n    <div class=\"mb-4 p-3 bg-red-50 border border-red-300 text-red-700 rounded text-sm\">\n      ";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "error"), env.opts.autoescape);
+output += "\n    </div>\n  ";
+;
+}
+output += "\n\n  <form id=\"workout-form\" method=\"POST\" action=\"/workouts/";
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "workout")),"id"), env.opts.autoescape);
+output += "/edit\" class=\"space-y-6\">\n    <input type=\"hidden\" name=\"_csrf\" value=\"";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
+output += "\">\n\n    <!-- Date + Notes -->\n    <div class=\"space-y-3\">\n      <div>\n        <label for=\"date\" class=\"block text-sm font-medium text-gray-700 mb-1\">Date</label>\n        <input type=\"date\" id=\"date\" name=\"date\" value=\"";
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "workout")),"date"), env.opts.autoescape);
+output += "\" required\n               class=\"border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500\">\n      </div>\n      <div>\n        <label for=\"notes\" class=\"block text-sm font-medium text-gray-700 mb-1\">Notes <span class=\"text-gray-400 font-normal\">(optional)</span></label>\n        <textarea id=\"notes\" name=\"notes\" rows=\"2\" maxlength=\"2000\"\n                  placeholder=\"How'd it go?\"\n                  class=\"w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none\">";
+output += runtime.suppressValue((runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "workout")),"notes")?runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "workout")),"notes"):""), env.opts.autoescape);
+output += "</textarea>\n      </div>\n    </div>\n\n    <!-- Lifts -->\n    <div>\n      <h3 class=\"text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide\">Lifts</h3>\n      <div id=\"lifts-container\" class=\"space-y-4\"></div>\n      <button type=\"button\" id=\"add-lift-btn\"\n              class=\"mt-3 w-full border border-dashed border-gray-300 hover:border-indigo-400 text-gray-500 hover:text-indigo-600 rounded-lg py-3 text-sm font-medium transition-colors\">\n        + Add Lift\n      </button>\n    </div>\n\n    <button type=\"submit\"\n            class=\"w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg text-sm transition-colors\">\n      Save Changes\n    </button>\n  </form>\n</div>\n\n<!-- Templates (not rendered, cloned by JS) -->\n<template id=\"lift-template\">\n  <div class=\"lift-section border border-gray-200 rounded-lg overflow-hidden\" data-lift-idx=\"\">\n    <div class=\"bg-gray-50 border-b border-gray-200 px-3 py-2 flex items-center gap-2\">\n      <input type=\"text\" name=\"lift_name[]\" placeholder=\"Lift name (e.g. Squat)\" required\n             maxlength=\"100\"\n             class=\"flex-1 bg-transparent text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none min-w-0\">\n      <input type=\"hidden\" name=\"lift_superset[]\" value=\"\">\n      <button type=\"button\" class=\"remove-lift-btn text-gray-400 hover:text-red-500 text-lg leading-none flex-shrink-0\" title=\"Remove lift\">&times;</button>\n    </div>\n    <div class=\"p-3 space-y-2\">\n      <div class=\"sets-container space-y-2\"></div>\n      <button type=\"button\" class=\"add-set-btn text-xs text-indigo-600 hover:text-indigo-800 font-medium\">\n        + Add set\n      </button>\n    </div>\n  </div>\n</template>\n\n<template id=\"set-template\">\n  <div class=\"set-row flex items-center gap-2\">\n    <input type=\"hidden\" name=\"set_lift[]\" value=\"\">\n    <span class=\"set-label text-xs text-gray-400 w-6 flex-shrink-0 text-center font-medium\"></span>\n    <div class=\"flex items-center gap-1 flex-1\">\n      <input type=\"number\" name=\"set_reps[]\" placeholder=\"Reps\" required\n             min=\"0\" max=\"9999\"\n             class=\"w-full border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-indigo-500\">\n      <span class=\"text-gray-400 text-xs flex-shrink-0\">×</span>\n      <input type=\"number\" name=\"set_weight[]\" placeholder=\"lbs\" required\n             min=\"0\" max=\"9999\" step=\"0.5\"\n             class=\"w-full border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-indigo-500\">\n      <span class=\"text-gray-400 text-xs flex-shrink-0\">lbs</span>\n    </div>\n    <button type=\"button\" class=\"remove-set-btn text-gray-300 hover:text-red-500 flex-shrink-0 leading-none\"\n            title=\"Remove set\">&times;</button>\n  </div>\n</template>\n\n<script>\n  let liftCount = 0;\n\n  function addSet(liftSection, reps, weight) {\n    const liftIdx = parseInt(liftSection.dataset.liftIdx);\n    const container = liftSection.querySelector('.sets-container');\n    const setIdx = container.querySelectorAll('.set-row').length;\n\n    const tmpl = document.getElementById('set-template').content.cloneNode(true);\n    const row = tmpl.querySelector('.set-row');\n\n    row.querySelector('[name=\"set_lift[]\"]').value = liftIdx;\n    row.querySelector('.set-label').textContent = setIdx + 1;\n\n    if (reps !== undefined) row.querySelector('[name=\"set_reps[]\"]').value = reps;\n    if (weight !== undefined) row.querySelector('[name=\"set_weight[]\"]').value = weight;\n\n    row.querySelector('.remove-set-btn').addEventListener('click', () => {\n      if (container.querySelectorAll('.set-row').length > 1) {\n        row.remove();\n        renumberSets(container);\n      }\n    });\n\n    container.appendChild(tmpl);\n  }\n\n  function renumberSets(container) {\n    container.querySelectorAll('.set-label').forEach((el, i) => {\n      el.textContent = i + 1;\n    });\n  }\n\n  function addLift(liftName, supersetId, sets) {\n    const tmpl = document.getElementById('lift-template').content.cloneNode(true);\n    const section = tmpl.querySelector('.lift-section');\n    const idx = liftCount++;\n\n    section.dataset.liftIdx = idx;\n\n    if (liftName) section.querySelector('[name=\"lift_name[]\"]').value = liftName;\n    if (supersetId) section.querySelector('[name=\"lift_superset[]\"]').value = supersetId;\n\n    section.querySelector('.remove-lift-btn').addEventListener('click', () => {\n      section.remove();\n    });\n\n    section.querySelector('.add-set-btn').addEventListener('click', () => {\n      addSet(section);\n    });\n\n    document.getElementById('lifts-container').appendChild(tmpl);\n\n    if (sets && sets.length > 0) {\n      sets.forEach((s) => addSet(section, s.reps, s.weight));\n    } else {\n      addSet(section);\n    }\n\n    return section;\n  }\n\n  document.getElementById('add-lift-btn').addEventListener('click', () => addLift());\n\n  // Pre-populate from existing workout data\n  const existing = ";
+output += runtime.suppressValue(env.getFilter("safe").call(context, runtime.contextOrFrameLookup(context, frame, "workoutJson")), env.opts.autoescape);
+output += ";\n  if (existing && existing.lifts && existing.lifts.length > 0) {\n    existing.lifts.forEach((lift) => {\n      addLift(lift.lift_name, lift.superset_id || '', lift.sets);\n    });\n  } else {\n    addLift();\n  }\n</script>\n";
+cb(null, output);
+;
+} catch (e) {
+  cb(runtime.handleError(e, lineno, colno));
+}
+}
+return {
+b_content: b_content,
+root: root
+};
+
+  })(),
+  "pages/workouts/list.njk": (function() {
+function root(env, context, frame, runtime, cb) {
+var lineno = 0;
+var colno = 0;
+var output = "";
+try {
+var parentTemplate = null;
+env.getTemplate("base.njk", true, "pages/workouts/list.njk", false, function(t_3,t_2) {
+if(t_3) { cb(t_3); return; }
+parentTemplate = t_2
+for(var t_1 in parentTemplate.blocks) {
+context.addBlock(t_1, parentTemplate.blocks[t_1]);
+}
+output += "\n\n";
+(parentTemplate ? function(e, c, f, r, cb) { cb(""); } : context.getBlock("content"))(env, context, frame, runtime, function(t_5,t_4) {
+if(t_5) { cb(t_5); return; }
+output += t_4;
+output += "\n";
+if(parentTemplate) {
+parentTemplate.rootRenderFunc(env, context, frame, runtime, cb);
+} else {
+cb(null, output);
+}
+})});
+} catch (e) {
+  cb(runtime.handleError(e, lineno, colno));
+}
+}
+function b_content(env, context, frame, runtime, cb) {
+var lineno = 2;
+var colno = 3;
+var output = "";
+try {
+var frame = frame.push(true);
+output += "\n<div class=\"max-w-lg mx-auto\">\n\n  <div class=\"flex items-center justify-between mb-6\">\n    <h2 class=\"text-xl font-semibold\">Workout History</h2>\n    <a href=\"/workouts/new\"\n       class=\"text-sm text-indigo-600 hover:text-indigo-800 font-medium\">+ Log workout</a>\n  </div>\n\n  <div class=\"space-y-3\">\n    ";
+var tasks = [];
+tasks.push(
+function(callback) {
+env.getTemplate("partials/workouts/list-items.njk", false, "pages/workouts/list.njk", false, function(t_7,t_6) {
+if(t_7) { cb(t_7); return; }
+callback(null,t_6);});
+});
+tasks.push(
+function(template, callback){
+template.render(context.getVariables(), frame, function(t_9,t_8) {
+if(t_9) { cb(t_9); return; }
+callback(null,t_8);});
+});
+tasks.push(
+function(result, callback){
+output += result;
+callback(null);
+});
+env.waterfall(tasks, function(){
+output += "\n  </div>\n\n</div>\n";
+cb(null, output);
+});
+} catch (e) {
+  cb(runtime.handleError(e, lineno, colno));
+}
+}
+return {
+b_content: b_content,
+root: root
+};
+
+  })(),
   "pages/workouts/new.njk": (function() {
 function root(env, context, frame, runtime, cb) {
 var lineno = 0;
@@ -968,7 +1099,7 @@ var output = "";
 try {
 var parentTemplate = null;
 if(runtime.contextOrFrameLookup(context, frame, "user")) {
-output += "\n<nav class=\"fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40\"\n     style=\"padding-bottom: env(safe-area-inset-bottom, 0)\">\n  <div class=\"max-w-lg mx-auto grid grid-cols-4 h-14\">\n\n    <a href=\"/\" class=\"flex flex-col items-center justify-center gap-0.5 text-gray-500 hover:text-indigo-600 transition-colors\">\n      <svg class=\"w-5 h-5\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" viewBox=\"0 0 24 24\">\n        <path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6\"/>\n      </svg>\n      <span class=\"text-xs font-medium\">Home</span>\n    </a>\n\n    <a href=\"/routines\" class=\"flex flex-col items-center justify-center gap-0.5 text-gray-500 hover:text-indigo-600 transition-colors\">\n      <svg class=\"w-5 h-5\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" viewBox=\"0 0 24 24\">\n        <path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z\"/>\n      </svg>\n      <span class=\"text-xs font-medium\">Routines</span>\n    </a>\n\n    <a href=\"/workouts/new\" class=\"flex flex-col items-center justify-center gap-0.5 text-gray-500 hover:text-indigo-600 transition-colors\">\n      <span class=\"flex items-center justify-center w-9 h-9 bg-indigo-600 hover:bg-indigo-700 rounded-full transition-colors -mt-4 shadow-md\">\n        <svg class=\"w-5 h-5 text-white\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" viewBox=\"0 0 24 24\">\n          <path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 4v16m8-8H4\"/>\n        </svg>\n      </span>\n      <span class=\"text-xs font-medium -mt-0.5\">Log</span>\n    </a>\n\n    <a href=\"/settings\" class=\"flex flex-col items-center justify-center gap-0.5 text-gray-500 hover:text-indigo-600 transition-colors\">\n      <svg class=\"w-5 h-5\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" viewBox=\"0 0 24 24\">\n        <path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>\n      </svg>\n      <span class=\"text-xs font-medium\">Settings</span>\n    </a>\n\n  </div>\n</nav>\n";
+output += "\n<nav class=\"fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40\"\n     style=\"padding-bottom: env(safe-area-inset-bottom, 0)\">\n  <div class=\"max-w-lg mx-auto grid grid-cols-5 h-14\">\n\n    <a href=\"/\" class=\"flex flex-col items-center justify-center gap-0.5 text-gray-500 hover:text-indigo-600 transition-colors\">\n      <svg class=\"w-5 h-5\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" viewBox=\"0 0 24 24\">\n        <path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6\"/>\n      </svg>\n      <span class=\"text-xs font-medium\">Home</span>\n    </a>\n\n    <a href=\"/routines\" class=\"flex flex-col items-center justify-center gap-0.5 text-gray-500 hover:text-indigo-600 transition-colors\">\n      <svg class=\"w-5 h-5\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" viewBox=\"0 0 24 24\">\n        <path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z\"/>\n      </svg>\n      <span class=\"text-xs font-medium\">Routines</span>\n    </a>\n\n    <a href=\"/workouts/new\" class=\"flex flex-col items-center justify-center gap-0.5 text-gray-500 hover:text-indigo-600 transition-colors\">\n      <span class=\"flex items-center justify-center w-9 h-9 bg-indigo-600 hover:bg-indigo-700 rounded-full transition-colors -mt-4 shadow-md\">\n        <svg class=\"w-5 h-5 text-white\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" viewBox=\"0 0 24 24\">\n          <path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 4v16m8-8H4\"/>\n        </svg>\n      </span>\n      <span class=\"text-xs font-medium -mt-0.5\">Log</span>\n    </a>\n\n    <a href=\"/workouts\" class=\"flex flex-col items-center justify-center gap-0.5 text-gray-500 hover:text-indigo-600 transition-colors\">\n      <svg class=\"w-5 h-5\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" viewBox=\"0 0 24 24\">\n        <path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01\"/>\n      </svg>\n      <span class=\"text-xs font-medium\">History</span>\n    </a>\n\n    <a href=\"/settings\" class=\"flex flex-col items-center justify-center gap-0.5 text-gray-500 hover:text-indigo-600 transition-colors\">\n      <svg class=\"w-5 h-5\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" viewBox=\"0 0 24 24\">\n        <path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>\n      </svg>\n      <span class=\"text-xs font-medium\">Settings</span>\n    </a>\n\n  </div>\n</nav>\n";
 ;
 }
 output += "\n";
@@ -1924,6 +2055,237 @@ output += runtime.suppressValue((runtime.contextOrFrameLookup(context, frame, "i
 output += "\">\n      <span class=\"pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ";
 output += runtime.suppressValue((runtime.contextOrFrameLookup(context, frame, "inlineLogging")?"translate-x-5":"translate-x-0"), env.opts.autoescape);
 output += "\"></span>\n    </button>\n  </form>\n</div>\n";
+if(parentTemplate) {
+parentTemplate.rootRenderFunc(env, context, frame, runtime, cb);
+} else {
+cb(null, output);
+}
+;
+} catch (e) {
+  cb(runtime.handleError(e, lineno, colno));
+}
+}
+return {
+root: root
+};
+
+  })(),
+  "partials/workouts/detail.njk": (function() {
+function root(env, context, frame, runtime, cb) {
+var lineno = 0;
+var colno = 0;
+var output = "";
+try {
+var parentTemplate = null;
+output += "<div class=\"border-t border-gray-100 bg-gray-50 px-4 py-3 space-y-3\">\n  ";
+if(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "workout")),"notes")) {
+output += "\n    <p class=\"text-xs text-gray-500 italic\">";
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "workout")),"notes"), env.opts.autoescape);
+output += "</p>\n  ";
+;
+}
+output += "\n\n  ";
+frame = frame.push();
+var t_3 = runtime.contextOrFrameLookup(context, frame, "groups");
+if(t_3) {t_3 = runtime.fromIterator(t_3);
+var t_2 = t_3.length;
+for(var t_1=0; t_1 < t_3.length; t_1++) {
+var t_4 = t_3[t_1];
+frame.set("group", t_4);
+frame.set("loop.index", t_1 + 1);
+frame.set("loop.index0", t_1);
+frame.set("loop.revindex", t_2 - t_1);
+frame.set("loop.revindex0", t_2 - t_1 - 1);
+frame.set("loop.first", t_1 === 0);
+frame.set("loop.last", t_1 === t_2 - 1);
+frame.set("loop.length", t_2);
+output += "\n    ";
+if(runtime.memberLookup((t_4),"type") == "superset") {
+output += "\n      <div class=\"border border-indigo-100 rounded-lg overflow-hidden\">\n        <div class=\"bg-indigo-50 px-3 py-1.5\">\n          <span class=\"text-xs font-semibold text-indigo-600 uppercase tracking-wide\">Superset</span>\n        </div>\n        ";
+frame = frame.push();
+var t_7 = runtime.memberLookup((t_4),"lifts");
+if(t_7) {t_7 = runtime.fromIterator(t_7);
+var t_6 = t_7.length;
+for(var t_5=0; t_5 < t_7.length; t_5++) {
+var t_8 = t_7[t_5];
+frame.set("lift", t_8);
+frame.set("loop.index", t_5 + 1);
+frame.set("loop.index0", t_5);
+frame.set("loop.revindex", t_6 - t_5);
+frame.set("loop.revindex0", t_6 - t_5 - 1);
+frame.set("loop.first", t_5 === 0);
+frame.set("loop.last", t_5 === t_6 - 1);
+frame.set("loop.length", t_6);
+output += "\n          <div class=\"px-3 py-2 ";
+if(!runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "loop")),"last")) {
+output += "border-b border-indigo-100";
+;
+}
+output += "\">\n            <p class=\"text-xs font-semibold text-gray-700 mb-1 capitalize\">";
+output += runtime.suppressValue(runtime.memberLookup((t_8),"lift_name"), env.opts.autoescape);
+output += "</p>\n            <div class=\"space-y-0.5\">\n              ";
+frame = frame.push();
+var t_11 = runtime.memberLookup((t_8),"sets");
+if(t_11) {t_11 = runtime.fromIterator(t_11);
+var t_10 = t_11.length;
+for(var t_9=0; t_9 < t_11.length; t_9++) {
+var t_12 = t_11[t_9];
+frame.set("set", t_12);
+frame.set("loop.index", t_9 + 1);
+frame.set("loop.index0", t_9);
+frame.set("loop.revindex", t_10 - t_9);
+frame.set("loop.revindex0", t_10 - t_9 - 1);
+frame.set("loop.first", t_9 === 0);
+frame.set("loop.last", t_9 === t_10 - 1);
+frame.set("loop.length", t_10);
+output += "\n                <p class=\"text-xs text-gray-600\">\n                  Set ";
+output += runtime.suppressValue(runtime.memberLookup((t_12),"set_number"), env.opts.autoescape);
+output += ": ";
+output += runtime.suppressValue(runtime.memberLookup((t_12),"reps"), env.opts.autoescape);
+output += " reps &times; ";
+output += runtime.suppressValue(runtime.memberLookup((t_12),"weight"), env.opts.autoescape);
+output += " lbs\n                </p>\n              ";
+;
+}
+}
+frame = frame.pop();
+output += "\n            </div>\n          </div>\n        ";
+;
+}
+}
+frame = frame.pop();
+output += "\n      </div>\n    ";
+;
+}
+else {
+output += "\n      ";
+var t_13;
+t_13 = runtime.memberLookup((runtime.memberLookup((t_4),"lifts")),0);
+frame.set("lift", t_13, true);
+if(frame.topLevel) {
+context.setVariable("lift", t_13);
+}
+if(frame.topLevel) {
+context.addExport("lift", t_13);
+}
+output += "\n      <div>\n        <p class=\"text-xs font-semibold text-gray-700 mb-1 capitalize\">";
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "lift")),"lift_name"), env.opts.autoescape);
+output += "</p>\n        <div class=\"space-y-0.5\">\n          ";
+frame = frame.push();
+var t_16 = runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "lift")),"sets");
+if(t_16) {t_16 = runtime.fromIterator(t_16);
+var t_15 = t_16.length;
+for(var t_14=0; t_14 < t_16.length; t_14++) {
+var t_17 = t_16[t_14];
+frame.set("set", t_17);
+frame.set("loop.index", t_14 + 1);
+frame.set("loop.index0", t_14);
+frame.set("loop.revindex", t_15 - t_14);
+frame.set("loop.revindex0", t_15 - t_14 - 1);
+frame.set("loop.first", t_14 === 0);
+frame.set("loop.last", t_14 === t_15 - 1);
+frame.set("loop.length", t_15);
+output += "\n            <p class=\"text-xs text-gray-600\">\n              Set ";
+output += runtime.suppressValue(runtime.memberLookup((t_17),"set_number"), env.opts.autoescape);
+output += ": ";
+output += runtime.suppressValue(runtime.memberLookup((t_17),"reps"), env.opts.autoescape);
+output += " reps &times; ";
+output += runtime.suppressValue(runtime.memberLookup((t_17),"weight"), env.opts.autoescape);
+output += " lbs\n            </p>\n          ";
+;
+}
+}
+frame = frame.pop();
+output += "\n        </div>\n      </div>\n    ";
+;
+}
+output += "\n  ";
+;
+}
+}
+frame = frame.pop();
+output += "\n\n  <div class=\"pt-1\">\n    <button type=\"button\"\n            onclick=\"document.getElementById('detail-";
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "workout")),"id"), env.opts.autoescape);
+output += "').innerHTML=''\"\n            class=\"text-xs text-gray-400 hover:text-gray-600\">\n      &uarr; Collapse\n    </button>\n  </div>\n</div>\n";
+if(parentTemplate) {
+parentTemplate.rootRenderFunc(env, context, frame, runtime, cb);
+} else {
+cb(null, output);
+}
+;
+} catch (e) {
+  cb(runtime.handleError(e, lineno, colno));
+}
+}
+return {
+root: root
+};
+
+  })(),
+  "partials/workouts/list-items.njk": (function() {
+function root(env, context, frame, runtime, cb) {
+var lineno = 0;
+var colno = 0;
+var output = "";
+try {
+var parentTemplate = null;
+frame = frame.push();
+var t_3 = runtime.contextOrFrameLookup(context, frame, "workouts");
+if(t_3) {t_3 = runtime.fromIterator(t_3);
+var t_2 = t_3.length;
+for(var t_1=0; t_1 < t_3.length; t_1++) {
+var t_4 = t_3[t_1];
+frame.set("workout", t_4);
+frame.set("loop.index", t_1 + 1);
+frame.set("loop.index0", t_1);
+frame.set("loop.revindex", t_2 - t_1);
+frame.set("loop.revindex0", t_2 - t_1 - 1);
+frame.set("loop.first", t_1 === 0);
+frame.set("loop.last", t_1 === t_2 - 1);
+frame.set("loop.length", t_2);
+output += "\n<div class=\"border border-gray-200 rounded-lg overflow-hidden bg-white\">\n  <div class=\"px-4 py-3 flex items-start justify-between gap-3\">\n    <div class=\"min-w-0 flex-1\">\n      <p class=\"font-medium text-gray-900 text-sm\">";
+output += runtime.suppressValue(runtime.memberLookup((t_4),"formatted_date"), env.opts.autoescape);
+output += "</p>\n      <p class=\"text-xs text-gray-500 mt-0.5 truncate\">\n        ";
+if(runtime.memberLookup((t_4),"lift_names")) {
+output += runtime.suppressValue(runtime.memberLookup((t_4),"lift_names"), env.opts.autoescape);
+;
+}
+else {
+output += "<span class=\"italic\">No lifts</span>";
+;
+}
+output += "\n      </p>\n      <p class=\"text-xs text-gray-400 mt-0.5\">";
+output += runtime.suppressValue(runtime.memberLookup((t_4),"total_sets"), env.opts.autoescape);
+output += " set";
+output += runtime.suppressValue((runtime.memberLookup((t_4),"total_sets") != 1?"s":""), env.opts.autoescape);
+output += "</p>\n    </div>\n    <div class=\"flex items-center gap-2 flex-shrink-0\">\n      <a href=\"/workouts/";
+output += runtime.suppressValue(runtime.memberLookup((t_4),"id"), env.opts.autoescape);
+output += "/edit\"\n         class=\"text-xs text-indigo-600 hover:text-indigo-800 font-medium\">Edit</a>\n      <button type=\"button\"\n              hx-get=\"/workouts/";
+output += runtime.suppressValue(runtime.memberLookup((t_4),"id"), env.opts.autoescape);
+output += "/detail\"\n              hx-target=\"#detail-";
+output += runtime.suppressValue(runtime.memberLookup((t_4),"id"), env.opts.autoescape);
+output += "\"\n              hx-swap=\"innerHTML\"\n              hx-indicator=\"#spinner-";
+output += runtime.suppressValue(runtime.memberLookup((t_4),"id"), env.opts.autoescape);
+output += "\"\n              class=\"text-xs text-gray-500 hover:text-gray-700 font-medium border border-gray-200 rounded px-2 py-1\">\n        Details\n        <span id=\"spinner-";
+output += runtime.suppressValue(runtime.memberLookup((t_4),"id"), env.opts.autoescape);
+output += "\" class=\"htmx-indicator text-gray-400 ml-1\">…</span>\n      </button>\n    </div>\n  </div>\n  <div id=\"detail-";
+output += runtime.suppressValue(runtime.memberLookup((t_4),"id"), env.opts.autoescape);
+output += "\"></div>\n</div>\n";
+;
+}
+}
+if (!t_2) {
+output += "\n<p class=\"text-center text-sm text-gray-400 py-10\">No workouts logged yet.</p>\n";
+}
+frame = frame.pop();
+output += "\n\n";
+if(runtime.contextOrFrameLookup(context, frame, "nextCursor")) {
+output += "\n<div hx-get=\"/workouts?cursor=";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "nextCursor"), env.opts.autoescape);
+output += "\"\n     hx-target=\"this\"\n     hx-swap=\"outerHTML\"\n     hx-trigger=\"click\"\n     class=\"w-full text-center py-3 text-sm text-indigo-600 hover:text-indigo-800 font-medium border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors\">\n  Load more\n</div>\n";
+;
+}
+output += "\n";
 if(parentTemplate) {
 parentTemplate.rootRenderFunc(env, context, frame, runtime, cb);
 } else {
