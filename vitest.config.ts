@@ -17,6 +17,7 @@ export default defineWorkersConfig({
           // TURNSTILE_SECRET_KEY is Cloudflare's always-pass test key.
           bindings: {
             JWT_SECRET: "test-jwt-secret-do-not-use-in-production",
+            PASSWORD_PEPPER: "test-pepper-do-not-use-in-production",
             TURNSTILE_SECRET_KEY: "1x0000000000000000000000000000000AA",
             ENVIRONMENT: "dev",
           },

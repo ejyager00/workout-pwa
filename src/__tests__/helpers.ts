@@ -23,7 +23,7 @@ export async function createTestUser(options?: {
   const username =
     options?.username ?? `testuser_${crypto.randomUUID().slice(0, 8)}`;
   const password = options?.password ?? "password123";
-  const passwordHash = await hashPassword(password);
+  const passwordHash = await hashPassword(password, env.PASSWORD_PEPPER);
   const id = crypto.randomUUID();
 
   await env.DB.prepare(

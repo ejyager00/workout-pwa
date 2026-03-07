@@ -102,7 +102,7 @@ auth.post(
 
     // Create user
     const id = crypto.randomUUID();
-    const passwordHash = await hashPassword(password);
+    const passwordHash = await hashPassword(password, c.env.PASSWORD_PEPPER);
 
     await c.env.DB.prepare(
       "INSERT INTO users (id, username, password_hash, created_at) VALUES (?, ?, ?, ?)"
@@ -191,7 +191,7 @@ auth.post(
     }
 
     // Verify password
-    const valid = await verifyPassword(password, user.password_hash);
+    const valid = await verifyPassword(password, user.password_hash, c.env.PASSWORD_PEPPER);
     if (!valid) {
       return c.html(
         render("pages/login.njk", {
