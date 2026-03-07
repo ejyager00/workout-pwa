@@ -5,6 +5,7 @@ import { csrfMiddleware } from "../middleware/csrf";
 import { ensureCsrfCookie } from "../lib/csrf";
 import { render } from "../lib/render";
 import { hashApiKey } from "../middleware/apiKey";
+import { recalculateAllLiftStats } from "../lib/workouts";
 import type { Env, User } from "../types";
 
 interface UserSettings {
@@ -232,6 +233,15 @@ settings.post("/api-keys/:id/revoke", csrfMiddleware, async (c) => {
       newKey: null,
     })
   );
+});
+
+// ---------------------------------------------------------------------------
+// POST /settings/recalculate-stats — recompute all lift_stats for this user
+// ---------------------------------------------------------------------------
+settings.post("/recalculate-stats", csrfMiddleware, async (c) => {
+  const userId = c.get("userId");
+  await recalculateAllLiftStats(c.env.DB, userId);
+  return c.redirect("/settings", 302);
 });
 
 export default settings;

@@ -59,7 +59,8 @@ interface WorkoutSetRow {
 
 /**
  * Recalculates and upserts lift_stats for each lift name.
- * best_volume = max(reps * weight) over all sets in a single session.
+ * best_volume = max weight used in any set within a session.
+ * The session with the highest max weight is the "personal best".
  * Called inside (or immediately after) a batch, per-lift.
  */
 async function updateLiftStats(
@@ -105,7 +106,8 @@ async function updateLiftStats(
 
     let recentDate = "";
     let recentSets: { reps: number; weight: number }[] = [];
-    let bestVolume = 0;
+    let bestMaxWeight = 0;
+    let bestTotalReps = 0;
     let bestDate = "";
     let bestSets: { reps: number; weight: number }[] = [];
 
@@ -114,9 +116,14 @@ async function updateLiftStats(
         recentDate = entry.date;
         recentSets = entry.sets;
       }
-      const sessionBest = Math.max(...entry.sets.map((s) => s.reps * s.weight));
-      if (sessionBest > bestVolume) {
-        bestVolume = sessionBest;
+      const sessionMaxWeight = Math.max(...entry.sets.map((s) => s.weight));
+      const sessionTotalReps = entry.sets.reduce((sum, s) => sum + s.reps, 0);
+      if (
+        sessionMaxWeight > bestMaxWeight ||
+        (sessionMaxWeight === bestMaxWeight && sessionTotalReps > bestTotalReps)
+      ) {
+        bestMaxWeight = sessionMaxWeight;
+        bestTotalReps = sessionTotalReps;
         bestDate = entry.date;
         bestSets = entry.sets;
       }
@@ -141,7 +148,7 @@ async function updateLiftStats(
         liftName,
         recentDate,
         JSON.stringify(recentSets),
-        bestVolume,
+        bestMaxWeight,
         bestDate,
         JSON.stringify(bestSets),
         Math.floor(Date.now() / 1000)
@@ -353,6 +360,27 @@ export async function listWorkouts(
     limit,
     total: countRow?.total ?? 0,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Recalculate all lift stats for a user (e.g. after metric change)
+// ---------------------------------------------------------------------------
+
+/** Re-runs updateLiftStats for every lift name in the user's workout history. */
+export async function recalculateAllLiftStats(
+  db: D1Database,
+  userId: string
+): Promise<void> {
+  const rows = await db
+    .prepare(
+      `SELECT DISTINCT LOWER(wl.lift_name) AS lift_name
+       FROM workout_lifts wl
+       JOIN workouts w ON w.id = wl.workout_id
+       WHERE w.user_id = ?`
+    )
+    .bind(userId)
+    .all<{ lift_name: string }>();
+  await updateLiftStats(db, userId, rows.results.map((r) => r.lift_name));
 }
 
 // ---------------------------------------------------------------------------
