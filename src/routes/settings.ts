@@ -241,7 +241,11 @@ settings.post("/api-keys/:id/revoke", csrfMiddleware, async (c) => {
 settings.post("/recalculate-stats", csrfMiddleware, async (c) => {
   const userId = c.get("userId");
   await recalculateAllLiftStats(c.env.DB, userId);
-  return c.redirect("/settings", 302);
+  return c.html(
+    `<div id="recalc-stats">
+      <p class="text-sm text-green-600">Lift stats recalculated.</p>
+    </div>`
+  );
 });
 
 export default settings;

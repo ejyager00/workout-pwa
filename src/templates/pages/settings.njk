@@ -54,13 +54,20 @@
       Recalculate personal bests from your full workout history.
     </p>
     <div class="border border-gray-200 rounded-lg p-4">
-      <form method="POST" action="/settings/recalculate-stats">
-        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-        <button type="submit"
-                class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium py-2 px-3 rounded transition-colors">
-          Recalculate lift stats
-        </button>
-      </form>
+      <div id="recalc-stats">
+        <form hx-post="/settings/recalculate-stats"
+              hx-target="#recalc-stats"
+              hx-swap="outerHTML"
+              hx-indicator="#recalc-indicator">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button type="submit"
+                  class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium py-2 px-3 rounded transition-colors"
+                  hx-disabled-elt="this">
+            Recalculate lift stats
+          </button>
+          <span id="recalc-indicator" class="htmx-indicator text-sm text-gray-500 ml-2">Recalculating…</span>
+        </form>
+      </div>
     </div>
   </section>
 
