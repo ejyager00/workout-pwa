@@ -200,3 +200,5 @@ dist
 
 ### Build artifacts ###
 public/app.css
+
+scripts/local/

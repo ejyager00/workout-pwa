@@ -70,6 +70,14 @@ async function updateLiftStats(
 ): Promise<void> {
   for (const rawName of liftNames) {
     const liftName = rawName.toLowerCase();
+
+    // Look up whether this lift uses reverse_volume scoring (lower is better)
+    const liftMeta = await db
+      .prepare("SELECT reverse_volume FROM lifts WHERE LOWER(name) = ?")
+      .bind(liftName)
+      .first<{ reverse_volume: number }>();
+    const reverseVolume = liftMeta?.reverse_volume === 1;
+
     // Fetch every set for this lift across all workouts for this user (case-insensitive)
     const rows = await db
       .prepare(
@@ -106,7 +114,7 @@ async function updateLiftStats(
 
     let recentDate = "";
     let recentSets: { reps: number; weight: number }[] = [];
-    let bestWeightSquaredVolume = 0;
+    let bestVolume = reverseVolume ? Infinity : -Infinity;
     let bestDate = "";
     let bestSets: { reps: number; weight: number }[] = [];
 
@@ -115,11 +123,10 @@ async function updateLiftStats(
         recentDate = entry.date;
         recentSets = entry.sets;
       }
-      const sessionWeightSquaredVolume = entry.sets.reduce((sum, s) => sum + s.reps * s.weight * s.weight, 0);
-      if (
-        sessionWeightSquaredVolume > bestWeightSquaredVolume
-      ) {
-        bestWeightSquaredVolume = sessionWeightSquaredVolume;
+      const sessionVolume = entry.sets.reduce((sum, s) => sum + s.reps * s.weight * s.weight, 0);
+      const isBetter = reverseVolume ? sessionVolume < bestVolume : sessionVolume > bestVolume;
+      if (isBetter) {
+        bestVolume = sessionVolume;
         bestDate = entry.date;
         bestSets = entry.sets;
       }
@@ -144,7 +151,7 @@ async function updateLiftStats(
         liftName,
         recentDate,
         JSON.stringify(recentSets),
-        bestWeightSquaredVolume,
+        bestVolume,
         bestDate,
         JSON.stringify(bestSets),
         Math.floor(Date.now() / 1000)
