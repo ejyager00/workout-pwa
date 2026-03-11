@@ -106,8 +106,7 @@ async function updateLiftStats(
 
     let recentDate = "";
     let recentSets: { reps: number; weight: number }[] = [];
-    let bestMaxWeight = 0;
-    let bestTotalReps = 0;
+    let bestWeightedVolume = 0;
     let bestDate = "";
     let bestSets: { reps: number; weight: number }[] = [];
 
@@ -116,14 +115,11 @@ async function updateLiftStats(
         recentDate = entry.date;
         recentSets = entry.sets;
       }
-      const sessionMaxWeight = Math.max(...entry.sets.map((s) => s.weight));
-      const sessionTotalReps = entry.sets.reduce((sum, s) => sum + s.reps, 0);
+      const sessionWeightedVolume = entry.sets.reduce((sum, s) => sum + s.reps * s.weight * s.weight, 0);
       if (
-        sessionMaxWeight > bestMaxWeight ||
-        (sessionMaxWeight === bestMaxWeight && sessionTotalReps > bestTotalReps)
+        sessionWeightedVolume > bestWeightedVolume
       ) {
-        bestMaxWeight = sessionMaxWeight;
-        bestTotalReps = sessionTotalReps;
+        bestWeightedVolume = sessionWeightedVolume;
         bestDate = entry.date;
         bestSets = entry.sets;
       }
@@ -148,7 +144,7 @@ async function updateLiftStats(
         liftName,
         recentDate,
         JSON.stringify(recentSets),
-        bestMaxWeight,
+        bestWeightedVolume,
         bestDate,
         JSON.stringify(bestSets),
         Math.floor(Date.now() / 1000)
