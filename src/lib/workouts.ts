@@ -123,7 +123,10 @@ async function updateLiftStats(
         recentDate = entry.date;
         recentSets = entry.sets;
       }
-      const sessionVolume = entry.sets.reduce((sum, s) => sum + s.reps * s.weight * s.weight, 0);
+      const sessionVolume = entry.sets.reduce(
+        (best, s) => (reverseVolume ? Math.min(best, s.reps * s.weight) : Math.max(best, s.reps * s.weight)),
+        reverseVolume ? Infinity : -Infinity
+      );
       const isBetter = reverseVolume ? sessionVolume < bestVolume : sessionVolume > bestVolume;
       if (isBetter) {
         bestVolume = sessionVolume;
