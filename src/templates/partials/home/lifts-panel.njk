@@ -41,7 +41,7 @@
             {% if not completed %}
               <input type="checkbox" name="item_ids[]" value="{{ item.id }}"
                      form="superset-form"
-                     class="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 flex-shrink-0">
+                     class="mt-1 h-4 w-4 rounded border-gray-300 text-red-700 flex-shrink-0">
             {% endif %}
             <div class="flex-1 min-w-0">
               <p class="font-medium text-gray-900 text-sm truncate">{{ item.lift_name }}</p>
@@ -103,11 +103,11 @@
                   <input type="hidden" name="set_lift[]" value="{{ item.flatIdx }}" form="complete-form">
                   <input type="number" name="set_reps[]" placeholder="Reps" min="0" max="9999"
                          form="complete-form"
-                         class="w-full border border-gray-300 rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                         class="w-full border border-gray-300 rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-red-500">
                   <span class="text-gray-400 text-xs flex-shrink-0">&times;</span>
                   <input type="number" name="set_weight[]" placeholder="lbs" min="0" max="9999" step="0.5"
                          form="complete-form"
-                         class="w-full border border-gray-300 rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                         class="w-full border border-gray-300 rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-red-500">
                   <span class="text-xs text-gray-400 flex-shrink-0">lbs</span>
                 </div>
               {% endfor %}
@@ -118,10 +118,10 @@
 
       {% else %}
         {# ── Superset group ── #}
-        <div class="border-2 border-indigo-200 rounded-lg overflow-hidden bg-indigo-50">
+        <div class="border-2 border-red-200 rounded-lg overflow-hidden bg-red-50">
 
-          <div class="flex items-center justify-between px-3 py-1.5 bg-indigo-100 border-b border-indigo-200">
-            <span class="text-xs font-semibold text-indigo-700 uppercase tracking-wide">Superset</span>
+          <div class="flex items-center justify-between px-3 py-1.5 bg-red-100 border-b border-red-200">
+            <span class="text-xs font-semibold text-red-800 uppercase tracking-wide">Superset</span>
             {% if not completed %}
               <div class="flex gap-1">
                 <form method="POST" action="/override/items/{{ group.items[0].id }}/move"
@@ -129,20 +129,20 @@
                       hx-target="#lifts-panel" hx-swap="outerHTML" class="inline">
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <input type="hidden" name="direction" value="up">
-                  <button type="submit" class="text-indigo-400 hover:text-indigo-700 text-sm px-1">&#8593;</button>
+                  <button type="submit" class="text-red-500 hover:text-red-800 text-sm px-1">&#8593;</button>
                 </form>
                 <form method="POST" action="/override/items/{{ group.items[0].id }}/move"
                       hx-post="/override/items/{{ group.items[0].id }}/move"
                       hx-target="#lifts-panel" hx-swap="outerHTML" class="inline">
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <input type="hidden" name="direction" value="down">
-                  <button type="submit" class="text-indigo-400 hover:text-indigo-700 text-sm px-1">&#8595;</button>
+                  <button type="submit" class="text-red-500 hover:text-red-800 text-sm px-1">&#8595;</button>
                 </form>
               </div>
             {% endif %}
           </div>
 
-          <div class="divide-y divide-indigo-100">
+          <div class="divide-y divide-red-100">
             {% for item in group.items %}
               <div class="px-3 pt-2.5 pb-2">
 
@@ -157,7 +157,7 @@
                             hx-post="/override/items/{{ item.id }}/unsuperset"
                             hx-target="#lifts-panel" hx-swap="outerHTML">
                         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-                        <button type="submit" class="text-xs text-indigo-500 hover:text-indigo-700">Ungroup</button>
+                        <button type="submit" class="text-xs text-red-500 hover:text-red-800">Ungroup</button>
                       </form>
                       <form method="POST" action="/override/items/{{ item.id }}/delete"
                             hx-post="/override/items/{{ item.id }}/delete"
@@ -199,11 +199,11 @@
                         <input type="hidden" name="set_lift[]" value="{{ item.flatIdx }}" form="complete-form">
                         <input type="number" name="set_reps[]" placeholder="Reps" min="0" max="9999"
                                form="complete-form"
-                               class="w-full border border-indigo-200 rounded px-2 py-1 text-sm text-center bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                               class="w-full border border-red-200 rounded px-2 py-1 text-sm text-center bg-white focus:outline-none focus:ring-1 focus:ring-red-500">
                         <span class="text-gray-400 text-xs flex-shrink-0">&times;</span>
                         <input type="number" name="set_weight[]" placeholder="lbs" min="0" max="9999" step="0.5"
                                form="complete-form"
-                               class="w-full border border-indigo-200 rounded px-2 py-1 text-sm text-center bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                               class="w-full border border-red-200 rounded px-2 py-1 text-sm text-center bg-white focus:outline-none focus:ring-1 focus:ring-red-500">
                         <span class="text-xs text-gray-400 flex-shrink-0">lbs</span>
                       </div>
                     {% endfor %}
@@ -225,7 +225,7 @@
   {% if not completed and groups | length >= 2 %}
     <div class="mb-4">
       <button type="submit" form="superset-form"
-              class="text-sm text-indigo-600 hover:text-indigo-800 border border-indigo-200 hover:border-indigo-400 rounded px-3 py-1.5 transition-colors">
+              class="text-sm text-red-700 hover:text-red-900 border border-red-200 hover:border-red-500 rounded px-3 py-1.5 transition-colors">
         Group selected as superset
       </button>
     </div>
@@ -241,18 +241,18 @@
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <div class="flex flex-wrap gap-2 items-center">
           <input type="text" name="lift_name" placeholder="Lift name" required maxlength="100"
-                 class="flex-1 min-w-32 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                 class="flex-1 min-w-32 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
           <div class="flex items-center gap-1 flex-shrink-0">
             <input type="number" name="reps_min" value="8" min="1" max="999" required
-                   class="w-14 border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                   class="w-14 border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-red-500">
             <span class="text-gray-400 text-xs">–</span>
             <input type="number" name="reps_max" value="12" min="1" max="999" required
-                   class="w-14 border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                   class="w-14 border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-red-500">
             <span class="text-gray-500 text-xs ml-1">reps</span>
           </div>
           <div class="flex items-center gap-1 flex-shrink-0">
             <input type="number" name="sets" value="3" min="1" max="99" required
-                   class="w-12 border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                   class="w-12 border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-red-500">
             <span class="text-gray-500 text-xs">sets</span>
           </div>
           <button type="submit"
@@ -267,7 +267,7 @@
   {# ── Complete Workout ── #}
   {% if not completed %}
     <button type="submit" form="complete-form"
-            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg text-sm transition-colors">
+            class="w-full bg-red-700 hover:bg-red-800 text-white font-semibold py-3 rounded-lg text-sm transition-colors">
       Complete Workout
     </button>
   {% endif %}

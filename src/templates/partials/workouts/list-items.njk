@@ -10,7 +10,7 @@
     </div>
     <div class="flex items-center gap-2 flex-shrink-0">
       <a href="/workouts/{{ workout.id }}/edit"
-         class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Edit</a>
+         class="text-xs text-red-700 hover:text-red-900 font-medium">Edit</a>
       <button type="button"
               hx-get="/workouts/{{ workout.id }}/detail"
               hx-target="#detail-{{ workout.id }}"
@@ -33,7 +33,7 @@
      hx-target="this"
      hx-swap="outerHTML"
      hx-trigger="click"
-     class="w-full text-center py-3 text-sm text-indigo-600 hover:text-indigo-800 font-medium border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+     class="w-full text-center py-3 text-sm text-red-700 hover:text-red-900 font-medium border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
   Load more
 </div>
 {% endif %}
