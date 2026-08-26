@@ -1,0 +1,83 @@
+<div id="routines-manager">
+
+  <!-- Weekly schedule: which routine runs on each day -->
+  <h2 class="text-xl font-semibold mb-1">Weekly Schedule</h2>
+  <p class="text-sm text-gray-500 mb-4">
+    The routine each day starts with. You can still swap in a different one on the day itself.
+  </p>
+
+  <ul class="divide-y divide-gray-200 border border-gray-200 rounded-lg overflow-hidden mb-8">
+    {% for day in days %}
+      <li class="flex items-center justify-between gap-3 px-4 py-3">
+        <span class="font-medium text-gray-900 text-sm flex-shrink-0">{{ day.name }}</span>
+        <form method="POST" action="/routines/schedule/{{ day.weekday }}"
+              hx-post="/routines/schedule/{{ day.weekday }}"
+              hx-target="#routines-manager" hx-swap="outerHTML"
+              hx-trigger="change from:find select"
+              class="flex-1 min-w-0 flex justify-end">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <select name="routine_id"
+                  class="max-w-full border border-gray-300 rounded px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500">
+            <option value="" {% if not day.routine %}selected{% endif %}>Rest day</option>
+            {% for r in routines %}
+              <option value="{{ r.id }}"
+                      {% if day.routine and day.routine.id == r.id %}selected{% endif %}>{{ r.name }}</option>
+            {% endfor %}
+          </select>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <!-- Routine library: every routine, scheduled or not -->
+  <h2 class="text-xl font-semibold mb-1">My Routines</h2>
+  <p class="text-sm text-gray-500 mb-4">
+    Reusable workouts. Keep variations here &mdash; different equipment, shorter sessions, travel days.
+  </p>
+
+  {% if routines | length == 0 %}
+    <p class="text-center text-sm text-gray-400 py-6 border border-dashed border-gray-300 rounded-lg mb-4">
+      No routines yet. Create your first one below.
+    </p>
+  {% else %}
+    <ul class="divide-y divide-gray-200 border border-gray-200 rounded-lg overflow-hidden mb-4">
+      {% for r in routines %}
+        <li>
+          <a href="/routines/{{ r.id }}"
+             class="flex items-center justify-between gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
+            <div class="min-w-0">
+              <p class="font-medium text-gray-900 text-sm truncate">{{ r.name }}</p>
+              <p class="text-xs text-gray-500">
+                {{ r.lift_count }} lift{% if r.lift_count != 1 %}s{% endif %}
+              </p>
+            </div>
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              {% for d in r.dayNames %}
+                <span class="text-xs font-medium bg-red-50 text-red-800 rounded px-1.5 py-0.5">{{ d }}</span>
+              {% endfor %}
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <!-- New routine -->
+  <div class="border border-dashed border-gray-300 rounded-lg p-3">
+    <p class="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">New routine</p>
+    <form method="POST" action="/routines" class="flex gap-2 items-center">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <input type="text" name="name" placeholder="e.g. Chest & Back — Dumbbells"
+             required maxlength="100"
+             class="flex-1 min-w-0 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+      <button type="submit"
+              class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium py-1.5 px-3 rounded transition-colors flex-shrink-0">
+        + Create
+      </button>
+    </form>
+  </div>
+
+</div>

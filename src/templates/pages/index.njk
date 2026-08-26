@@ -3,12 +3,16 @@
 {% block content %}
 <div class="max-w-lg mx-auto">
 
-  {% if routine and routine.name %}
-    <p class="text-sm text-gray-500 -mt-4 mb-5">{{ routine.name }}</p>
-  {% elif not routine %}
+  {% if not routine and not overridden and routines | length == 0 %}
     <div class="mb-5 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-      No routine for {{ dayName }}.
-      <a href="/routines/{{ weekday }}" class="font-medium underline">Set one up →</a>
+      No routines yet.
+      <a href="/routines" class="font-medium underline">Build one →</a>
+    </div>
+  {% elif not routine and not overridden %}
+    <div class="mb-5 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+      Nothing scheduled for {{ dayName }}.
+      <a href="/routines" class="font-medium underline">Schedule it →</a>
+      or swap one in below.
     </div>
   {% endif %}
 

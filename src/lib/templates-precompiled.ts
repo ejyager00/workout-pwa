@@ -230,19 +230,15 @@ var output = "";
 try {
 var frame = frame.push(true);
 output += "\n<div class=\"max-w-lg mx-auto\">\n\n  ";
-if(runtime.contextOrFrameLookup(context, frame, "routine") && runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"name")) {
-output += "\n    <p class=\"text-sm text-gray-500 -mt-4 mb-5\">";
-output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"name"), env.opts.autoescape);
-output += "</p>\n  ";
+if(!runtime.contextOrFrameLookup(context, frame, "routine") && !runtime.contextOrFrameLookup(context, frame, "overridden") && env.getFilter("length").call(context, runtime.contextOrFrameLookup(context, frame, "routines")) == 0) {
+output += "\n    <div class=\"mb-5 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800\">\n      No routines yet.\n      <a href=\"/routines\" class=\"font-medium underline\">Build one →</a>\n    </div>\n  ";
 ;
 }
 else {
-if(!runtime.contextOrFrameLookup(context, frame, "routine")) {
-output += "\n    <div class=\"mb-5 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800\">\n      No routine for ";
+if(!runtime.contextOrFrameLookup(context, frame, "routine") && !runtime.contextOrFrameLookup(context, frame, "overridden")) {
+output += "\n    <div class=\"mb-5 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800\">\n      Nothing scheduled for ";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "dayName"), env.opts.autoescape);
-output += ".\n      <a href=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "weekday"), env.opts.autoescape);
-output += "\" class=\"font-medium underline\">Set one up →</a>\n    </div>\n  ";
+output += ".\n      <a href=\"/routines\" class=\"font-medium underline\">Schedule it →</a>\n      or swap one in below.\n    </div>\n  ";
 ;
 }
 ;
@@ -566,14 +562,14 @@ root: root
 };
 
   })(),
-  "pages/routines/day.njk": (function() {
+  "pages/routines/detail.njk": (function() {
 function root(env, context, frame, runtime, cb) {
 var lineno = 0;
 var colno = 0;
 var output = "";
 try {
 var parentTemplate = null;
-env.getTemplate("base.njk", true, "pages/routines/day.njk", false, function(t_3,t_2) {
+env.getTemplate("base.njk", true, "pages/routines/detail.njk", false, function(t_3,t_2) {
 if(t_3) { cb(t_3); return; }
 parentTemplate = t_2
 for(var t_1 in parentTemplate.blocks) {
@@ -600,25 +596,56 @@ var colno = 3;
 var output = "";
 try {
 var frame = frame.push(true);
-output += "\n<div class=\"max-w-lg mx-auto\">\n\n  <div class=\"mb-6\">\n    <a href=\"/routines\" class=\"text-sm text-gray-500 hover:text-gray-700\">&larr; All routines</a>\n  </div>\n\n  <!-- Routine name -->\n  <div class=\"mb-6\">\n    <form method=\"POST\" action=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += "\n<div class=\"max-w-lg mx-auto\">\n\n  <div class=\"mb-6\">\n    <a href=\"/routines\" class=\"text-sm text-gray-500 hover:text-gray-700\">&larr; All routines</a>\n  </div>\n\n  <!-- Routine name -->\n  <div class=\"mb-2\">\n    <form method=\"POST\" action=\"/routines/";
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/name\" class=\"flex gap-2 items-center\">\n      <input type=\"hidden\" name=\"_csrf\" value=\"";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
 output += "\">\n      <input type=\"text\" name=\"name\" value=\"";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"name"), env.opts.autoescape);
-output += "\"\n             placeholder=\"Routine name (e.g. Push Day)\"\n             maxlength=\"100\"\n             class=\"flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500\">\n      <button type=\"submit\"\n              class=\"bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium py-2 px-3 rounded transition-colors\">\n        Save\n      </button>\n    </form>\n  </div>\n\n  <!-- Items list (htmx target) -->\n  ";
+output += "\"\n             placeholder=\"Routine name (e.g. Push Day)\"\n             required maxlength=\"100\"\n             class=\"flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500\">\n      <button type=\"submit\"\n              class=\"bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium py-2 px-3 rounded transition-colors\">\n        Save\n      </button>\n    </form>\n  </div>\n\n  <!-- Where this routine sits in the week -->\n  <div class=\"mb-6 flex items-center gap-2 flex-wrap\">\n    ";
+if(env.getFilter("length").call(context, runtime.contextOrFrameLookup(context, frame, "dayNames")) > 0) {
+output += "\n      <span class=\"text-xs text-gray-500\">Scheduled on</span>\n      ";
+frame = frame.push();
+var t_8 = runtime.contextOrFrameLookup(context, frame, "dayNames");
+if(t_8) {t_8 = runtime.fromIterator(t_8);
+var t_7 = t_8.length;
+for(var t_6=0; t_6 < t_8.length; t_6++) {
+var t_9 = t_8[t_6];
+frame.set("d", t_9);
+frame.set("loop.index", t_6 + 1);
+frame.set("loop.index0", t_6);
+frame.set("loop.revindex", t_7 - t_6);
+frame.set("loop.revindex0", t_7 - t_6 - 1);
+frame.set("loop.first", t_6 === 0);
+frame.set("loop.last", t_6 === t_7 - 1);
+frame.set("loop.length", t_7);
+output += "\n        <span class=\"text-xs font-medium bg-red-50 text-red-800 rounded px-1.5 py-0.5\">";
+output += runtime.suppressValue(t_9, env.opts.autoescape);
+output += "</span>\n      ";
+;
+}
+}
+frame = frame.pop();
+output += "\n    ";
+;
+}
+else {
+output += "\n      <span class=\"text-xs text-gray-400\">Not scheduled &mdash; pick it from the home page any day you want it.</span>\n    ";
+;
+}
+output += "\n  </div>\n\n  <!-- Items list (htmx target) -->\n  ";
 var tasks = [];
 tasks.push(
 function(callback) {
-env.getTemplate("partials/routines/items-list.njk", false, "pages/routines/day.njk", false, function(t_7,t_6) {
-if(t_7) { cb(t_7); return; }
-callback(null,t_6);});
+env.getTemplate("partials/routines/items-list.njk", false, "pages/routines/detail.njk", false, function(t_11,t_10) {
+if(t_11) { cb(t_11); return; }
+callback(null,t_10);});
 });
 tasks.push(
 function(template, callback){
-template.render(context.getVariables(), frame, function(t_9,t_8) {
-if(t_9) { cb(t_9); return; }
-callback(null,t_8);});
+template.render(context.getVariables(), frame, function(t_13,t_12) {
+if(t_13) { cb(t_13); return; }
+callback(null,t_12);});
 });
 tasks.push(
 function(result, callback){
@@ -626,7 +653,17 @@ output += result;
 callback(null);
 });
 env.waterfall(tasks, function(){
-output += "\n\n</div>\n";
+output += "\n\n  <!-- Routine-level actions -->\n  <div class=\"mt-8 pt-4 border-t border-gray-200 flex items-center justify-between\">\n    <form method=\"POST\" action=\"/routines/";
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
+output += "/duplicate\">\n      <input type=\"hidden\" name=\"_csrf\" value=\"";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
+output += "\">\n      <button type=\"submit\"\n              class=\"text-sm text-gray-600 hover:text-gray-900 border border-gray-300 hover:border-gray-400 rounded px-3 py-1.5 transition-colors\">\n        Duplicate\n      </button>\n    </form>\n    <form method=\"POST\" action=\"/routines/";
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
+output += "/delete\"\n          onsubmit=\"return confirm('Delete “";
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"name"), env.opts.autoescape);
+output += "”? This cannot be undone.')\">\n      <input type=\"hidden\" name=\"_csrf\" value=\"";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
+output += "\">\n      <button type=\"submit\" class=\"text-sm text-red-600 hover:text-red-800 px-2 py-1.5\">\n        Delete routine\n      </button>\n    </form>\n  </div>\n\n</div>\n";
 cb(null, output);
 });
 } catch (e) {
@@ -673,51 +710,29 @@ var colno = 3;
 var output = "";
 try {
 var frame = frame.push(true);
-output += "\n<div class=\"max-w-lg mx-auto\">\n  <div class=\"flex items-center justify-between mb-6\">\n    <h2 class=\"text-xl font-semibold\">Weekly Routines</h2>\n  </div>\n\n  <ul class=\"divide-y divide-gray-200 border border-gray-200 rounded-lg overflow-hidden\">\n    ";
-frame = frame.push();
-var t_8 = runtime.contextOrFrameLookup(context, frame, "days");
-if(t_8) {t_8 = runtime.fromIterator(t_8);
-var t_7 = t_8.length;
-for(var t_6=0; t_6 < t_8.length; t_6++) {
-var t_9 = t_8[t_6];
-frame.set("day", t_9);
-frame.set("loop.index", t_6 + 1);
-frame.set("loop.index0", t_6);
-frame.set("loop.revindex", t_7 - t_6);
-frame.set("loop.revindex0", t_7 - t_6 - 1);
-frame.set("loop.first", t_6 === 0);
-frame.set("loop.last", t_6 === t_7 - 1);
-frame.set("loop.length", t_7);
-output += "\n      <li>\n        <a href=\"/routines/";
-output += runtime.suppressValue(runtime.memberLookup((t_9),"weekday"), env.opts.autoescape);
-output += "\"\n           class=\"flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors\">\n          <span class=\"font-medium text-gray-900\">";
-output += runtime.suppressValue(runtime.memberLookup((t_9),"name"), env.opts.autoescape);
-output += "</span>\n          <div class=\"flex items-center gap-2\">\n            ";
-if(runtime.memberLookup((t_9),"routine") && runtime.memberLookup((runtime.memberLookup((t_9),"routine")),"name")) {
-output += "\n              <span class=\"text-sm text-gray-600\">";
-output += runtime.suppressValue(runtime.memberLookup((runtime.memberLookup((t_9),"routine")),"name"), env.opts.autoescape);
-output += "</span>\n            ";
-;
-}
-else {
-if(runtime.memberLookup((t_9),"routine")) {
-output += "\n              <span class=\"text-sm text-gray-400 italic\">Unnamed</span>\n            ";
-;
-}
-else {
-output += "\n              <span class=\"text-sm text-gray-400\">No routine</span>\n            ";
-;
-}
-;
-}
-output += "\n            <svg class=\"w-4 h-4 text-gray-400\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">\n              <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 5l7 7-7 7\"/>\n            </svg>\n          </div>\n        </a>\n      </li>\n    ";
-;
-}
-}
-frame = frame.pop();
-output += "\n  </ul>\n</div>\n";
+output += "\n<div class=\"max-w-lg mx-auto\">\n  ";
+var tasks = [];
+tasks.push(
+function(callback) {
+env.getTemplate("partials/routines/manager.njk", false, "pages/routines/list.njk", false, function(t_7,t_6) {
+if(t_7) { cb(t_7); return; }
+callback(null,t_6);});
+});
+tasks.push(
+function(template, callback){
+template.render(context.getVariables(), frame, function(t_9,t_8) {
+if(t_9) { cb(t_9); return; }
+callback(null,t_8);});
+});
+tasks.push(
+function(result, callback){
+output += result;
+callback(null);
+});
+env.waterfall(tasks, function(){
+output += "\n</div>\n";
 cb(null, output);
-;
+});
 } catch (e) {
   cb(runtime.handleError(e, lineno, colno));
 }
@@ -1221,7 +1236,168 @@ var colno = 0;
 var output = "";
 try {
 var parentTemplate = null;
-output += "<div id=\"lifts-panel\">\n\n  ";
+output += "\n";
+var macro_t_1 = runtime.makeMacro(
+["item", "csrfToken", "completed"], 
+["superset"], 
+function (l_item, l_csrfToken, l_completed, kwargs) {
+var callerFrame = frame;
+frame = new runtime.Frame();
+kwargs = kwargs || {};
+if (Object.prototype.hasOwnProperty.call(kwargs, "caller")) {
+frame.set("caller", kwargs.caller); }
+frame.set("item", l_item);
+frame.set("csrfToken", l_csrfToken);
+frame.set("completed", l_completed);
+frame.set("superset", Object.prototype.hasOwnProperty.call(kwargs, "superset") ? kwargs["superset"] : false);var t_2 = "";t_2 += "\n  ";
+if(l_completed) {
+t_2 += "\n    <div class=\"flex-1 min-w-0\">\n      <p class=\"font-medium text-gray-900 text-sm truncate\">";
+t_2 += runtime.suppressValue(runtime.memberLookup((l_item),"lift_name"), env.opts.autoescape);
+t_2 += "</p>\n      <p class=\"text-xs text-gray-500\">";
+t_2 += runtime.suppressValue(runtime.memberLookup((l_item),"reps_min"), env.opts.autoescape);
+t_2 += "–";
+t_2 += runtime.suppressValue(runtime.memberLookup((l_item),"reps_max"), env.opts.autoescape);
+t_2 += " reps &times; ";
+t_2 += runtime.suppressValue(runtime.memberLookup((l_item),"sets"), env.opts.autoescape);
+t_2 += " sets</p>\n    </div>\n  ";
+;
+}
+else {
+t_2 += "\n    ";
+var t_3;
+t_3 = (runtime.contextOrFrameLookup(context, frame, "superset")?"border-red-200 bg-white":"border-gray-300");
+frame.set("inputBorder", t_3, true);
+if(frame.topLevel) {
+context.setVariable("inputBorder", t_3);
+}
+if(frame.topLevel) {
+context.addExport("inputBorder", t_3);
+}
+t_2 += "\n    <details class=\"flex-1 min-w-0\">\n      <summary class=\"no-marker cursor-pointer\">\n        <span class=\"block font-medium text-gray-900 text-sm truncate\">";
+t_2 += runtime.suppressValue(runtime.memberLookup((l_item),"lift_name"), env.opts.autoescape);
+t_2 += "</span>\n        <span class=\"block text-xs text-gray-500\">\n          ";
+t_2 += runtime.suppressValue(runtime.memberLookup((l_item),"reps_min"), env.opts.autoescape);
+t_2 += "–";
+t_2 += runtime.suppressValue(runtime.memberLookup((l_item),"reps_max"), env.opts.autoescape);
+t_2 += " reps &times; ";
+t_2 += runtime.suppressValue(runtime.memberLookup((l_item),"sets"), env.opts.autoescape);
+t_2 += " sets\n          <span class=\"text-gray-400\">&middot; edit</span>\n        </span>\n      </summary>\n      <form method=\"POST\" action=\"/override/items/";
+t_2 += runtime.suppressValue(runtime.memberLookup((l_item),"id"), env.opts.autoescape);
+t_2 += "\"\n            hx-post=\"/override/items/";
+t_2 += runtime.suppressValue(runtime.memberLookup((l_item),"id"), env.opts.autoescape);
+t_2 += "\"\n            hx-target=\"#lifts-panel\" hx-swap=\"outerHTML\"\n            class=\"mt-2 flex flex-wrap gap-2 items-center\">\n        <input type=\"hidden\" name=\"_csrf\" value=\"";
+t_2 += runtime.suppressValue(l_csrfToken, env.opts.autoescape);
+t_2 += "\">\n        <input type=\"text\" name=\"lift_name\" value=\"";
+t_2 += runtime.suppressValue(runtime.memberLookup((l_item),"lift_name"), env.opts.autoescape);
+t_2 += "\"\n               placeholder=\"Lift name\" required maxlength=\"100\"\n               class=\"flex-1 min-w-32 border ";
+t_2 += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "inputBorder"), env.opts.autoescape);
+t_2 += " rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-red-500\">\n        <div class=\"flex items-center gap-1 flex-shrink-0\">\n          <input type=\"number\" name=\"reps_min\" value=\"";
+t_2 += runtime.suppressValue(runtime.memberLookup((l_item),"reps_min"), env.opts.autoescape);
+t_2 += "\" min=\"1\" max=\"999\" required\n                 class=\"w-14 border ";
+t_2 += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "inputBorder"), env.opts.autoescape);
+t_2 += " rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-red-500\">\n          <span class=\"text-gray-400 text-xs\">–</span>\n          <input type=\"number\" name=\"reps_max\" value=\"";
+t_2 += runtime.suppressValue(runtime.memberLookup((l_item),"reps_max"), env.opts.autoescape);
+t_2 += "\" min=\"1\" max=\"999\" required\n                 class=\"w-14 border ";
+t_2 += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "inputBorder"), env.opts.autoescape);
+t_2 += " rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-red-500\">\n          <span class=\"text-gray-500 text-xs ml-1\">reps</span>\n        </div>\n        <div class=\"flex items-center gap-1 flex-shrink-0\">\n          <input type=\"number\" name=\"sets\" value=\"";
+t_2 += runtime.suppressValue(runtime.memberLookup((l_item),"sets"), env.opts.autoescape);
+t_2 += "\" min=\"1\" max=\"99\" required\n                 class=\"w-12 border ";
+t_2 += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "inputBorder"), env.opts.autoescape);
+t_2 += " rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-red-500\">\n          <span class=\"text-gray-500 text-xs\">sets</span>\n        </div>\n        <button type=\"submit\"\n                class=\"text-xs bg-red-50 hover:bg-red-100 text-red-800 font-medium py-1 px-2 rounded transition-colors flex-shrink-0\">\n          Save\n        </button>\n      </form>\n    </details>\n  ";
+;
+}
+t_2 += "\n";
+;
+frame = callerFrame;
+return new runtime.SafeString(t_2);
+});
+context.addExport("liftHeading");
+context.setVariable("liftHeading", macro_t_1);
+output += "\n\n<div id=\"lifts-panel\">\n\n  ";
+output += "\n  <div class=\"mb-5\">\n\n    <div class=\"flex items-start justify-between gap-3\">\n      <div class=\"min-w-0\">\n        ";
+if(runtime.contextOrFrameLookup(context, frame, "routine")) {
+output += "\n          <p class=\"text-sm font-medium text-gray-900 truncate\">";
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"name"), env.opts.autoescape);
+output += "</p>\n        ";
+;
+}
+else {
+if(env.getFilter("length").call(context, runtime.contextOrFrameLookup(context, frame, "groups")) > 0) {
+output += "\n          <p class=\"text-sm font-medium text-gray-900\">Custom workout</p>\n        ";
+;
+}
+else {
+output += "\n          <p class=\"text-sm text-gray-400\">Rest day</p>\n        ";
+;
+}
+;
+}
+output += "\n      </div>\n\n      ";
+if(!runtime.contextOrFrameLookup(context, frame, "completed") && env.getFilter("length").call(context, runtime.contextOrFrameLookup(context, frame, "routines")) > 0) {
+output += "\n        <form method=\"POST\" action=\"/override/routine\"\n              hx-post=\"/override/routine\"\n              hx-target=\"#lifts-panel\" hx-swap=\"outerHTML\"\n              hx-trigger=\"change from:find select\"\n              ";
+output += "\n              ";
+if(runtime.contextOrFrameLookup(context, frame, "overridden")) {
+output += "hx-confirm=\"Replace today's lifts with this routine?\"";
+;
+}
+output += "\n              class=\"flex-shrink-0\">\n          <input type=\"hidden\" name=\"_csrf\" value=\"";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
+output += "\">\n          <select name=\"routine_id\"\n                  class=\"border border-gray-300 rounded px-2 py-1 text-xs bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500\">\n            <option value=\"\" selected>Swap routine…</option>\n            ";
+frame = frame.push();
+var t_6 = runtime.contextOrFrameLookup(context, frame, "routines");
+if(t_6) {t_6 = runtime.fromIterator(t_6);
+var t_5 = t_6.length;
+for(var t_4=0; t_4 < t_6.length; t_4++) {
+var t_7 = t_6[t_4];
+frame.set("r", t_7);
+frame.set("loop.index", t_4 + 1);
+frame.set("loop.index0", t_4);
+frame.set("loop.revindex", t_5 - t_4);
+frame.set("loop.revindex0", t_5 - t_4 - 1);
+frame.set("loop.first", t_4 === 0);
+frame.set("loop.last", t_4 === t_5 - 1);
+frame.set("loop.length", t_5);
+output += "\n              <option value=\"";
+output += runtime.suppressValue(runtime.memberLookup((t_7),"id"), env.opts.autoescape);
+output += "\">";
+output += runtime.suppressValue(runtime.memberLookup((t_7),"name"), env.opts.autoescape);
+output += "</option>\n            ";
+;
+}
+}
+frame = frame.pop();
+output += "\n          </select>\n        </form>\n      ";
+;
+}
+output += "\n    </div>\n\n    ";
+output += "\n    ";
+if(runtime.contextOrFrameLookup(context, frame, "overridden") && !runtime.contextOrFrameLookup(context, frame, "completed")) {
+output += "\n      <div class=\"mt-1.5 flex items-center gap-2 text-xs text-gray-500\">\n        <span class=\"min-w-0 truncate\">\n          ";
+if(runtime.contextOrFrameLookup(context, frame, "routine") && runtime.contextOrFrameLookup(context, frame, "scheduledRoutine") && runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id") == runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "scheduledRoutine")),"id")) {
+output += "\n            Customized for today\n          ";
+;
+}
+else {
+if(runtime.contextOrFrameLookup(context, frame, "scheduledRoutine")) {
+output += "\n            Instead of ";
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "scheduledRoutine")),"name"), env.opts.autoescape);
+output += "\n          ";
+;
+}
+else {
+output += "\n            ";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "dayName"), env.opts.autoescape);
+output += " is normally a rest day\n          ";
+;
+}
+;
+}
+output += "\n        </span>\n        <form method=\"POST\" action=\"/override/reset\"\n              hx-post=\"/override/reset\"\n              hx-target=\"#lifts-panel\" hx-swap=\"outerHTML\"\n              hx-confirm=\"Discard today's changes and go back to the scheduled routine?\"\n              class=\"flex-shrink-0\">\n          <input type=\"hidden\" name=\"_csrf\" value=\"";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
+output += "\">\n          <button type=\"submit\" class=\"underline hover:text-gray-700\">Reset</button>\n        </form>\n      </div>\n    ";
+;
+}
+output += "\n\n  </div>\n\n  ";
 output += "\n\n  ";
 output += "\n  <form id=\"complete-form\" method=\"POST\" action=\"/complete\">\n    <input type=\"hidden\" name=\"_csrf\" value=\"";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
@@ -1230,38 +1406,38 @@ output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "to
 output += "\">\n    ";
 output += "\n    ";
 frame = frame.push();
-var t_3 = runtime.contextOrFrameLookup(context, frame, "groups");
-if(t_3) {t_3 = runtime.fromIterator(t_3);
-var t_2 = t_3.length;
-for(var t_1=0; t_1 < t_3.length; t_1++) {
-var t_4 = t_3[t_1];
-frame.set("group", t_4);
-frame.set("loop.index", t_1 + 1);
-frame.set("loop.index0", t_1);
-frame.set("loop.revindex", t_2 - t_1);
-frame.set("loop.revindex0", t_2 - t_1 - 1);
-frame.set("loop.first", t_1 === 0);
-frame.set("loop.last", t_1 === t_2 - 1);
-frame.set("loop.length", t_2);
+var t_10 = runtime.contextOrFrameLookup(context, frame, "groups");
+if(t_10) {t_10 = runtime.fromIterator(t_10);
+var t_9 = t_10.length;
+for(var t_8=0; t_8 < t_10.length; t_8++) {
+var t_11 = t_10[t_8];
+frame.set("group", t_11);
+frame.set("loop.index", t_8 + 1);
+frame.set("loop.index0", t_8);
+frame.set("loop.revindex", t_9 - t_8);
+frame.set("loop.revindex0", t_9 - t_8 - 1);
+frame.set("loop.first", t_8 === 0);
+frame.set("loop.last", t_8 === t_9 - 1);
+frame.set("loop.length", t_9);
 output += "\n      ";
 frame = frame.push();
-var t_7 = runtime.memberLookup((t_4),"items");
-if(t_7) {t_7 = runtime.fromIterator(t_7);
-var t_6 = t_7.length;
-for(var t_5=0; t_5 < t_7.length; t_5++) {
-var t_8 = t_7[t_5];
-frame.set("item", t_8);
-frame.set("loop.index", t_5 + 1);
-frame.set("loop.index0", t_5);
-frame.set("loop.revindex", t_6 - t_5);
-frame.set("loop.revindex0", t_6 - t_5 - 1);
-frame.set("loop.first", t_5 === 0);
-frame.set("loop.last", t_5 === t_6 - 1);
-frame.set("loop.length", t_6);
+var t_14 = runtime.memberLookup((t_11),"items");
+if(t_14) {t_14 = runtime.fromIterator(t_14);
+var t_13 = t_14.length;
+for(var t_12=0; t_12 < t_14.length; t_12++) {
+var t_15 = t_14[t_12];
+frame.set("item", t_15);
+frame.set("loop.index", t_12 + 1);
+frame.set("loop.index0", t_12);
+frame.set("loop.revindex", t_13 - t_12);
+frame.set("loop.revindex0", t_13 - t_12 - 1);
+frame.set("loop.first", t_12 === 0);
+frame.set("loop.last", t_12 === t_13 - 1);
+frame.set("loop.length", t_13);
 output += "\n        <input type=\"hidden\" name=\"lift_name[]\"    value=\"";
-output += runtime.suppressValue(runtime.memberLookup((t_8),"lift_name"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((t_15),"lift_name"), env.opts.autoescape);
 output += "\"           form=\"complete-form\">\n        <input type=\"hidden\" name=\"lift_superset[]\" value=\"";
-output += runtime.suppressValue((runtime.memberLookup((t_8),"superset_id")?runtime.memberLookup((t_8),"superset_id"):""), env.opts.autoescape);
+output += runtime.suppressValue((runtime.memberLookup((t_15),"superset_id")?runtime.memberLookup((t_15),"superset_id"):""), env.opts.autoescape);
 output += "\" form=\"complete-form\">\n      ";
 ;
 }
@@ -1280,7 +1456,7 @@ output += "\n  <div class=\"space-y-3 mb-4\">\n\n    ";
 if(env.getFilter("length").call(context, runtime.contextOrFrameLookup(context, frame, "groups")) == 0) {
 output += "\n      <p class=\"text-center text-sm text-gray-400 py-6\">\n        No lifts yet today.";
 if(!runtime.contextOrFrameLookup(context, frame, "completed")) {
-output += " Add one below.";
+output += " Swap in a routine above, or add one below.";
 ;
 }
 output += "\n      </p>\n    ";
@@ -1288,30 +1464,30 @@ output += "\n      </p>\n    ";
 }
 output += "\n\n    ";
 frame = frame.push();
-var t_11 = runtime.contextOrFrameLookup(context, frame, "groups");
-if(t_11) {t_11 = runtime.fromIterator(t_11);
-var t_10 = t_11.length;
-for(var t_9=0; t_9 < t_11.length; t_9++) {
-var t_12 = t_11[t_9];
-frame.set("group", t_12);
-frame.set("loop.index", t_9 + 1);
-frame.set("loop.index0", t_9);
-frame.set("loop.revindex", t_10 - t_9);
-frame.set("loop.revindex0", t_10 - t_9 - 1);
-frame.set("loop.first", t_9 === 0);
-frame.set("loop.last", t_9 === t_10 - 1);
-frame.set("loop.length", t_10);
+var t_18 = runtime.contextOrFrameLookup(context, frame, "groups");
+if(t_18) {t_18 = runtime.fromIterator(t_18);
+var t_17 = t_18.length;
+for(var t_16=0; t_16 < t_18.length; t_16++) {
+var t_19 = t_18[t_16];
+frame.set("group", t_19);
+frame.set("loop.index", t_16 + 1);
+frame.set("loop.index0", t_16);
+frame.set("loop.revindex", t_17 - t_16);
+frame.set("loop.revindex0", t_17 - t_16 - 1);
+frame.set("loop.first", t_16 === 0);
+frame.set("loop.last", t_16 === t_17 - 1);
+frame.set("loop.length", t_17);
 output += "\n\n      ";
-if(runtime.memberLookup((t_12),"type") == "standalone") {
+if(runtime.memberLookup((t_19),"type") == "standalone") {
 output += "\n        ";
-var t_13;
-t_13 = runtime.memberLookup((runtime.memberLookup((t_12),"items")),0);
-frame.set("item", t_13, true);
+var t_20;
+t_20 = runtime.memberLookup((runtime.memberLookup((t_19),"items")),0);
+frame.set("item", t_20, true);
 if(frame.topLevel) {
-context.setVariable("item", t_13);
+context.setVariable("item", t_20);
 }
 if(frame.topLevel) {
-context.addExport("item", t_13);
+context.addExport("item", t_20);
 }
 output += "\n        <div class=\"border border-gray-200 rounded-lg bg-white overflow-hidden\">\n\n          ";
 output += "\n          <div class=\"flex items-start gap-2 px-3 pt-3 pb-2\">\n            ";
@@ -1321,15 +1497,9 @@ output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLook
 output += "\"\n                     form=\"superset-form\"\n                     class=\"mt-1 h-4 w-4 rounded border-gray-300 text-red-700 flex-shrink-0\">\n            ";
 ;
 }
-output += "\n            <div class=\"flex-1 min-w-0\">\n              <p class=\"font-medium text-gray-900 text-sm truncate\">";
-output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"lift_name"), env.opts.autoescape);
-output += "</p>\n              <p class=\"text-xs text-gray-500\">";
-output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"reps_min"), env.opts.autoescape);
-output += "–";
-output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"reps_max"), env.opts.autoescape);
-output += " reps &times; ";
-output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"sets"), env.opts.autoescape);
-output += " sets</p>\n            </div>\n            ";
+output += "\n            ";
+output += runtime.suppressValue((lineno = 152, colno = 26, runtime.callWrap(macro_t_1, "liftHeading", context, [runtime.contextOrFrameLookup(context, frame, "item"),runtime.contextOrFrameLookup(context, frame, "csrfToken"),runtime.contextOrFrameLookup(context, frame, "completed")])), env.opts.autoescape);
+output += "\n            ";
 if(!runtime.contextOrFrameLookup(context, frame, "completed")) {
 output += "\n              <div class=\"flex gap-1 flex-shrink-0\">\n                <form method=\"POST\" action=\"/override/items/";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"id"), env.opts.autoescape);
@@ -1363,22 +1533,22 @@ output += "\n                <p class=\"text-xs text-gray-400\">\n              
 output += runtime.suppressValue(runtime.memberLookup((runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"stat")),"recentDate"), env.opts.autoescape);
 output += " &middot;\n                  ";
 frame = frame.push();
-var t_16 = runtime.memberLookup((runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"stat")),"recentSets");
-if(t_16) {t_16 = runtime.fromIterator(t_16);
-var t_15 = t_16.length;
-for(var t_14=0; t_14 < t_16.length; t_14++) {
-var t_17 = t_16[t_14];
-frame.set("s", t_17);
-frame.set("loop.index", t_14 + 1);
-frame.set("loop.index0", t_14);
-frame.set("loop.revindex", t_15 - t_14);
-frame.set("loop.revindex0", t_15 - t_14 - 1);
-frame.set("loop.first", t_14 === 0);
-frame.set("loop.last", t_14 === t_15 - 1);
-frame.set("loop.length", t_15);
-output += runtime.suppressValue(runtime.memberLookup((t_17),"reps"), env.opts.autoescape);
+var t_23 = runtime.memberLookup((runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"stat")),"recentSets");
+if(t_23) {t_23 = runtime.fromIterator(t_23);
+var t_22 = t_23.length;
+for(var t_21=0; t_21 < t_23.length; t_21++) {
+var t_24 = t_23[t_21];
+frame.set("s", t_24);
+frame.set("loop.index", t_21 + 1);
+frame.set("loop.index0", t_21);
+frame.set("loop.revindex", t_22 - t_21);
+frame.set("loop.revindex0", t_22 - t_21 - 1);
+frame.set("loop.first", t_21 === 0);
+frame.set("loop.last", t_21 === t_22 - 1);
+frame.set("loop.length", t_22);
+output += runtime.suppressValue(runtime.memberLookup((t_24),"reps"), env.opts.autoescape);
 output += "&times;";
-output += runtime.suppressValue(runtime.memberLookup((t_17),"weight"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((t_24),"weight"), env.opts.autoescape);
 if(!runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "loop")),"last")) {
 output += ", ";
 ;
@@ -1396,22 +1566,22 @@ output += "\n                <p class=\"text-xs text-gray-400\">\n              
 output += runtime.suppressValue(runtime.memberLookup((runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"stat")),"bestDate"), env.opts.autoescape);
 output += " &middot;\n                  ";
 frame = frame.push();
-var t_20 = runtime.memberLookup((runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"stat")),"bestSets");
-if(t_20) {t_20 = runtime.fromIterator(t_20);
-var t_19 = t_20.length;
-for(var t_18=0; t_18 < t_20.length; t_18++) {
-var t_21 = t_20[t_18];
-frame.set("s", t_21);
-frame.set("loop.index", t_18 + 1);
-frame.set("loop.index0", t_18);
-frame.set("loop.revindex", t_19 - t_18);
-frame.set("loop.revindex0", t_19 - t_18 - 1);
-frame.set("loop.first", t_18 === 0);
-frame.set("loop.last", t_18 === t_19 - 1);
-frame.set("loop.length", t_19);
-output += runtime.suppressValue(runtime.memberLookup((t_21),"reps"), env.opts.autoescape);
+var t_27 = runtime.memberLookup((runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"stat")),"bestSets");
+if(t_27) {t_27 = runtime.fromIterator(t_27);
+var t_26 = t_27.length;
+for(var t_25=0; t_25 < t_27.length; t_25++) {
+var t_28 = t_27[t_25];
+frame.set("s", t_28);
+frame.set("loop.index", t_25 + 1);
+frame.set("loop.index0", t_25);
+frame.set("loop.revindex", t_26 - t_25);
+frame.set("loop.revindex0", t_26 - t_25 - 1);
+frame.set("loop.first", t_25 === 0);
+frame.set("loop.last", t_25 === t_26 - 1);
+frame.set("loop.length", t_26);
+output += runtime.suppressValue(runtime.memberLookup((t_28),"reps"), env.opts.autoescape);
 output += "&times;";
-output += runtime.suppressValue(runtime.memberLookup((t_21),"weight"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((t_28),"weight"), env.opts.autoescape);
 if(!runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "loop")),"last")) {
 output += ", ";
 ;
@@ -1431,21 +1601,21 @@ output += "\n          ";
 if(runtime.contextOrFrameLookup(context, frame, "inlineLogging") && !runtime.contextOrFrameLookup(context, frame, "completed")) {
 output += "\n            <div class=\"border-t border-gray-100 px-3 py-2 space-y-1.5\">\n              ";
 frame = frame.push();
-var t_24 = (lineno = 99, colno = 31, runtime.callWrap(runtime.contextOrFrameLookup(context, frame, "range"), "range", context, [runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"sets")]));
-if(t_24) {t_24 = runtime.fromIterator(t_24);
-var t_23 = t_24.length;
-for(var t_22=0; t_22 < t_24.length; t_22++) {
-var t_25 = t_24[t_22];
-frame.set("s", t_25);
-frame.set("loop.index", t_22 + 1);
-frame.set("loop.index0", t_22);
-frame.set("loop.revindex", t_23 - t_22);
-frame.set("loop.revindex0", t_23 - t_22 - 1);
-frame.set("loop.first", t_22 === 0);
-frame.set("loop.last", t_22 === t_23 - 1);
-frame.set("loop.length", t_23);
+var t_31 = (lineno = 203, colno = 31, runtime.callWrap(runtime.contextOrFrameLookup(context, frame, "range"), "range", context, [runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"sets")]));
+if(t_31) {t_31 = runtime.fromIterator(t_31);
+var t_30 = t_31.length;
+for(var t_29=0; t_29 < t_31.length; t_29++) {
+var t_32 = t_31[t_29];
+frame.set("s", t_32);
+frame.set("loop.index", t_29 + 1);
+frame.set("loop.index0", t_29);
+frame.set("loop.revindex", t_30 - t_29);
+frame.set("loop.revindex0", t_30 - t_29 - 1);
+frame.set("loop.first", t_29 === 0);
+frame.set("loop.last", t_29 === t_30 - 1);
+frame.set("loop.length", t_30);
 output += "\n                <div class=\"flex items-center gap-2\">\n                  <span class=\"text-xs text-gray-400 w-10 flex-shrink-0\">Set ";
-output += runtime.suppressValue(t_25 + 1, env.opts.autoescape);
+output += runtime.suppressValue(t_32 + 1, env.opts.autoescape);
 output += "</span>\n                  <input type=\"hidden\" name=\"set_lift[]\" value=\"";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"flatIdx"), env.opts.autoescape);
 output += "\" form=\"complete-form\">\n                  <input type=\"number\" name=\"set_reps[]\" placeholder=\"Reps\" min=\"0\" max=\"9999\"\n                         form=\"complete-form\"\n                         class=\"w-full border border-gray-300 rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-red-500\">\n                  <span class=\"text-gray-400 text-xs flex-shrink-0\">&times;</span>\n                  <input type=\"number\" name=\"set_weight[]\" placeholder=\"lbs\" min=\"0\" max=\"9999\" step=\"0.5\"\n                         form=\"complete-form\"\n                         class=\"w-full border border-gray-300 rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-red-500\">\n                  <span class=\"text-xs text-gray-400 flex-shrink-0\">lbs</span>\n                </div>\n              ";
@@ -1464,15 +1634,15 @@ output += "\n        ";
 output += "\n        <div class=\"border-2 border-red-200 rounded-lg overflow-hidden bg-red-50\">\n\n          <div class=\"flex items-center justify-between px-3 py-1.5 bg-red-100 border-b border-red-200\">\n            <span class=\"text-xs font-semibold text-red-800 uppercase tracking-wide\">Superset</span>\n            ";
 if(!runtime.contextOrFrameLookup(context, frame, "completed")) {
 output += "\n              <div class=\"flex gap-1\">\n                <form method=\"POST\" action=\"/override/items/";
-output += runtime.suppressValue(runtime.memberLookup((runtime.memberLookup((runtime.memberLookup((t_12),"items")),0)),"id"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.memberLookup((runtime.memberLookup((t_19),"items")),0)),"id"), env.opts.autoescape);
 output += "/move\"\n                      hx-post=\"/override/items/";
-output += runtime.suppressValue(runtime.memberLookup((runtime.memberLookup((runtime.memberLookup((t_12),"items")),0)),"id"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.memberLookup((runtime.memberLookup((t_19),"items")),0)),"id"), env.opts.autoescape);
 output += "/move\"\n                      hx-target=\"#lifts-panel\" hx-swap=\"outerHTML\" class=\"inline\">\n                  <input type=\"hidden\" name=\"_csrf\" value=\"";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
 output += "\">\n                  <input type=\"hidden\" name=\"direction\" value=\"up\">\n                  <button type=\"submit\" class=\"text-red-500 hover:text-red-800 text-sm px-1\">&#8593;</button>\n                </form>\n                <form method=\"POST\" action=\"/override/items/";
-output += runtime.suppressValue(runtime.memberLookup((runtime.memberLookup((runtime.memberLookup((t_12),"items")),0)),"id"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.memberLookup((runtime.memberLookup((t_19),"items")),0)),"id"), env.opts.autoescape);
 output += "/move\"\n                      hx-post=\"/override/items/";
-output += runtime.suppressValue(runtime.memberLookup((runtime.memberLookup((runtime.memberLookup((t_12),"items")),0)),"id"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.memberLookup((runtime.memberLookup((t_19),"items")),0)),"id"), env.opts.autoescape);
 output += "/move\"\n                      hx-target=\"#lifts-panel\" hx-swap=\"outerHTML\" class=\"inline\">\n                  <input type=\"hidden\" name=\"_csrf\" value=\"";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
 output += "\">\n                  <input type=\"hidden\" name=\"direction\" value=\"down\">\n                  <button type=\"submit\" class=\"text-red-500 hover:text-red-800 text-sm px-1\">&#8595;</button>\n                </form>\n              </div>\n            ";
@@ -1480,71 +1650,65 @@ output += "\">\n                  <input type=\"hidden\" name=\"direction\" valu
 }
 output += "\n          </div>\n\n          <div class=\"divide-y divide-red-100\">\n            ";
 frame = frame.push();
-var t_28 = runtime.memberLookup((t_12),"items");
-if(t_28) {t_28 = runtime.fromIterator(t_28);
-var t_27 = t_28.length;
-for(var t_26=0; t_26 < t_28.length; t_26++) {
-var t_29 = t_28[t_26];
-frame.set("item", t_29);
-frame.set("loop.index", t_26 + 1);
-frame.set("loop.index0", t_26);
-frame.set("loop.revindex", t_27 - t_26);
-frame.set("loop.revindex0", t_27 - t_26 - 1);
-frame.set("loop.first", t_26 === 0);
-frame.set("loop.last", t_26 === t_27 - 1);
-frame.set("loop.length", t_27);
-output += "\n              <div class=\"px-3 pt-2.5 pb-2\">\n\n                <div class=\"flex items-start gap-2\">\n                  <div class=\"flex-1 min-w-0\">\n                    <p class=\"font-medium text-gray-900 text-sm truncate\">";
-output += runtime.suppressValue(runtime.memberLookup((t_29),"lift_name"), env.opts.autoescape);
-output += "</p>\n                    <p class=\"text-xs text-gray-500\">";
-output += runtime.suppressValue(runtime.memberLookup((t_29),"reps_min"), env.opts.autoescape);
-output += "–";
-output += runtime.suppressValue(runtime.memberLookup((t_29),"reps_max"), env.opts.autoescape);
-output += " reps &times; ";
-output += runtime.suppressValue(runtime.memberLookup((t_29),"sets"), env.opts.autoescape);
-output += " sets</p>\n                  </div>\n                  ";
+var t_35 = runtime.memberLookup((t_19),"items");
+if(t_35) {t_35 = runtime.fromIterator(t_35);
+var t_34 = t_35.length;
+for(var t_33=0; t_33 < t_35.length; t_33++) {
+var t_36 = t_35[t_33];
+frame.set("item", t_36);
+frame.set("loop.index", t_33 + 1);
+frame.set("loop.index0", t_33);
+frame.set("loop.revindex", t_34 - t_33);
+frame.set("loop.revindex0", t_34 - t_33 - 1);
+frame.set("loop.first", t_33 === 0);
+frame.set("loop.last", t_33 === t_34 - 1);
+frame.set("loop.length", t_34);
+output += "\n              <div class=\"px-3 pt-2.5 pb-2\">\n\n                <div class=\"flex items-start gap-2\">\n                  ";
+output += runtime.suppressValue((lineno = 253, colno = 32, runtime.callWrap(macro_t_1, "liftHeading", context, [t_36,runtime.contextOrFrameLookup(context, frame, "csrfToken"),runtime.contextOrFrameLookup(context, frame, "completed"),true])), env.opts.autoescape);
+output += "\n                  ";
 if(!runtime.contextOrFrameLookup(context, frame, "completed")) {
 output += "\n                    <div class=\"flex items-center gap-2 flex-shrink-0\">\n                      <form method=\"POST\" action=\"/override/items/";
-output += runtime.suppressValue(runtime.memberLookup((t_29),"id"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((t_36),"id"), env.opts.autoescape);
 output += "/unsuperset\"\n                            hx-post=\"/override/items/";
-output += runtime.suppressValue(runtime.memberLookup((t_29),"id"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((t_36),"id"), env.opts.autoescape);
 output += "/unsuperset\"\n                            hx-target=\"#lifts-panel\" hx-swap=\"outerHTML\">\n                        <input type=\"hidden\" name=\"_csrf\" value=\"";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
 output += "\">\n                        <button type=\"submit\" class=\"text-xs text-red-500 hover:text-red-800\">Ungroup</button>\n                      </form>\n                      <form method=\"POST\" action=\"/override/items/";
-output += runtime.suppressValue(runtime.memberLookup((t_29),"id"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((t_36),"id"), env.opts.autoescape);
 output += "/delete\"\n                            hx-post=\"/override/items/";
-output += runtime.suppressValue(runtime.memberLookup((t_29),"id"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((t_36),"id"), env.opts.autoescape);
 output += "/delete\"\n                            hx-target=\"#lifts-panel\" hx-swap=\"outerHTML\">\n                        <input type=\"hidden\" name=\"_csrf\" value=\"";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
 output += "\">\n                        <button type=\"submit\" hx-confirm=\"Remove ";
-output += runtime.suppressValue(runtime.memberLookup((t_29),"lift_name"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((t_36),"lift_name"), env.opts.autoescape);
 output += " from today?\"\n                                class=\"text-red-400 hover:text-red-600\">&times;</button>\n                      </form>\n                    </div>\n                  ";
 ;
 }
 output += "\n                </div>\n\n                ";
 output += "\n                ";
-if(runtime.memberLookup((t_29),"stat") && (runtime.memberLookup((runtime.memberLookup((t_29),"stat")),"recentDate") || runtime.memberLookup((runtime.memberLookup((t_29),"stat")),"bestDate"))) {
+if(runtime.memberLookup((t_36),"stat") && (runtime.memberLookup((runtime.memberLookup((t_36),"stat")),"recentDate") || runtime.memberLookup((runtime.memberLookup((t_36),"stat")),"bestDate"))) {
 output += "\n                  <div class=\"mt-1 space-y-0.5\">\n                    ";
-if(runtime.memberLookup((runtime.memberLookup((t_29),"stat")),"recentDate")) {
+if(runtime.memberLookup((runtime.memberLookup((t_36),"stat")),"recentDate")) {
 output += "\n                      <p class=\"text-xs text-gray-400\">\n                        <span class=\"font-medium text-gray-500\">Last</span>\n                        ";
-output += runtime.suppressValue(runtime.memberLookup((runtime.memberLookup((t_29),"stat")),"recentDate"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.memberLookup((t_36),"stat")),"recentDate"), env.opts.autoescape);
 output += " &middot;\n                        ";
 frame = frame.push();
-var t_32 = runtime.memberLookup((runtime.memberLookup((t_29),"stat")),"recentSets");
-if(t_32) {t_32 = runtime.fromIterator(t_32);
-var t_31 = t_32.length;
-for(var t_30=0; t_30 < t_32.length; t_30++) {
-var t_33 = t_32[t_30];
-frame.set("s", t_33);
-frame.set("loop.index", t_30 + 1);
-frame.set("loop.index0", t_30);
-frame.set("loop.revindex", t_31 - t_30);
-frame.set("loop.revindex0", t_31 - t_30 - 1);
-frame.set("loop.first", t_30 === 0);
-frame.set("loop.last", t_30 === t_31 - 1);
-frame.set("loop.length", t_31);
-output += runtime.suppressValue(runtime.memberLookup((t_33),"reps"), env.opts.autoescape);
+var t_39 = runtime.memberLookup((runtime.memberLookup((t_36),"stat")),"recentSets");
+if(t_39) {t_39 = runtime.fromIterator(t_39);
+var t_38 = t_39.length;
+for(var t_37=0; t_37 < t_39.length; t_37++) {
+var t_40 = t_39[t_37];
+frame.set("s", t_40);
+frame.set("loop.index", t_37 + 1);
+frame.set("loop.index0", t_37);
+frame.set("loop.revindex", t_38 - t_37);
+frame.set("loop.revindex0", t_38 - t_37 - 1);
+frame.set("loop.first", t_37 === 0);
+frame.set("loop.last", t_37 === t_38 - 1);
+frame.set("loop.length", t_38);
+output += runtime.suppressValue(runtime.memberLookup((t_40),"reps"), env.opts.autoescape);
 output += "&times;";
-output += runtime.suppressValue(runtime.memberLookup((t_33),"weight"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((t_40),"weight"), env.opts.autoescape);
 if(!runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "loop")),"last")) {
 output += ", ";
 ;
@@ -1557,27 +1721,27 @@ output += "\n                      </p>\n                    ";
 ;
 }
 output += "\n                    ";
-if(runtime.memberLookup((runtime.memberLookup((t_29),"stat")),"bestDate")) {
+if(runtime.memberLookup((runtime.memberLookup((t_36),"stat")),"bestDate")) {
 output += "\n                      <p class=\"text-xs text-gray-400\">\n                        <span class=\"font-medium text-gray-500\">Best</span>\n                        ";
-output += runtime.suppressValue(runtime.memberLookup((runtime.memberLookup((t_29),"stat")),"bestDate"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.memberLookup((t_36),"stat")),"bestDate"), env.opts.autoescape);
 output += " &middot;\n                        ";
 frame = frame.push();
-var t_36 = runtime.memberLookup((runtime.memberLookup((t_29),"stat")),"bestSets");
-if(t_36) {t_36 = runtime.fromIterator(t_36);
-var t_35 = t_36.length;
-for(var t_34=0; t_34 < t_36.length; t_34++) {
-var t_37 = t_36[t_34];
-frame.set("s", t_37);
-frame.set("loop.index", t_34 + 1);
-frame.set("loop.index0", t_34);
-frame.set("loop.revindex", t_35 - t_34);
-frame.set("loop.revindex0", t_35 - t_34 - 1);
-frame.set("loop.first", t_34 === 0);
-frame.set("loop.last", t_34 === t_35 - 1);
-frame.set("loop.length", t_35);
-output += runtime.suppressValue(runtime.memberLookup((t_37),"reps"), env.opts.autoescape);
+var t_43 = runtime.memberLookup((runtime.memberLookup((t_36),"stat")),"bestSets");
+if(t_43) {t_43 = runtime.fromIterator(t_43);
+var t_42 = t_43.length;
+for(var t_41=0; t_41 < t_43.length; t_41++) {
+var t_44 = t_43[t_41];
+frame.set("s", t_44);
+frame.set("loop.index", t_41 + 1);
+frame.set("loop.index0", t_41);
+frame.set("loop.revindex", t_42 - t_41);
+frame.set("loop.revindex0", t_42 - t_41 - 1);
+frame.set("loop.first", t_41 === 0);
+frame.set("loop.last", t_41 === t_42 - 1);
+frame.set("loop.length", t_42);
+output += runtime.suppressValue(runtime.memberLookup((t_44),"reps"), env.opts.autoescape);
 output += "&times;";
-output += runtime.suppressValue(runtime.memberLookup((t_37),"weight"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((t_44),"weight"), env.opts.autoescape);
 if(!runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "loop")),"last")) {
 output += ", ";
 ;
@@ -1597,23 +1761,23 @@ output += "\n                ";
 if(runtime.contextOrFrameLookup(context, frame, "inlineLogging") && !runtime.contextOrFrameLookup(context, frame, "completed")) {
 output += "\n                  <div class=\"mt-2 space-y-1.5\">\n                    ";
 frame = frame.push();
-var t_40 = (lineno = 195, colno = 37, runtime.callWrap(runtime.contextOrFrameLookup(context, frame, "range"), "range", context, [runtime.memberLookup((t_29),"sets")]));
-if(t_40) {t_40 = runtime.fromIterator(t_40);
-var t_39 = t_40.length;
-for(var t_38=0; t_38 < t_40.length; t_38++) {
-var t_41 = t_40[t_38];
-frame.set("s", t_41);
-frame.set("loop.index", t_38 + 1);
-frame.set("loop.index0", t_38);
-frame.set("loop.revindex", t_39 - t_38);
-frame.set("loop.revindex0", t_39 - t_38 - 1);
-frame.set("loop.first", t_38 === 0);
-frame.set("loop.last", t_38 === t_39 - 1);
-frame.set("loop.length", t_39);
+var t_47 = (lineno = 296, colno = 37, runtime.callWrap(runtime.contextOrFrameLookup(context, frame, "range"), "range", context, [runtime.memberLookup((t_36),"sets")]));
+if(t_47) {t_47 = runtime.fromIterator(t_47);
+var t_46 = t_47.length;
+for(var t_45=0; t_45 < t_47.length; t_45++) {
+var t_48 = t_47[t_45];
+frame.set("s", t_48);
+frame.set("loop.index", t_45 + 1);
+frame.set("loop.index0", t_45);
+frame.set("loop.revindex", t_46 - t_45);
+frame.set("loop.revindex0", t_46 - t_45 - 1);
+frame.set("loop.first", t_45 === 0);
+frame.set("loop.last", t_45 === t_46 - 1);
+frame.set("loop.length", t_46);
 output += "\n                      <div class=\"flex items-center gap-2\">\n                        <span class=\"text-xs text-gray-400 w-10 flex-shrink-0\">Set ";
-output += runtime.suppressValue(t_41 + 1, env.opts.autoescape);
+output += runtime.suppressValue(t_48 + 1, env.opts.autoescape);
 output += "</span>\n                        <input type=\"hidden\" name=\"set_lift[]\" value=\"";
-output += runtime.suppressValue(runtime.memberLookup((t_29),"flatIdx"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((t_36),"flatIdx"), env.opts.autoescape);
 output += "\" form=\"complete-form\">\n                        <input type=\"number\" name=\"set_reps[]\" placeholder=\"Reps\" min=\"0\" max=\"9999\"\n                               form=\"complete-form\"\n                               class=\"w-full border border-red-200 rounded px-2 py-1 text-sm text-center bg-white focus:outline-none focus:ring-1 focus:ring-red-500\">\n                        <span class=\"text-gray-400 text-xs flex-shrink-0\">&times;</span>\n                        <input type=\"number\" name=\"set_weight[]\" placeholder=\"lbs\" min=\"0\" max=\"9999\" step=\"0.5\"\n                               form=\"complete-form\"\n                               class=\"w-full border border-red-200 rounded px-2 py-1 text-sm text-center bg-white focus:outline-none focus:ring-1 focus:ring-red-500\">\n                        <span class=\"text-xs text-gray-400 flex-shrink-0\">lbs</span>\n                      </div>\n                    ";
 ;
 }
@@ -1716,9 +1880,9 @@ try {
 var parentTemplate = null;
 output += "<div id=\"items-list\">\n\n  ";
 output += "\n  <form id=\"superset-form\" method=\"POST\" action=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/superset\"\n        hx-post=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/superset\"\n        hx-target=\"#items-list\" hx-swap=\"outerHTML\">\n    <input type=\"hidden\" name=\"_csrf\" value=\"";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
 output += "\">\n  </form>\n\n  <!-- Lift list -->\n  <div class=\"space-y-2 mb-4\">\n\n    ";
@@ -1758,11 +1922,11 @@ output += "\n            <input type=\"checkbox\" name=\"item_ids[]\" value=\"";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"id"), env.opts.autoescape);
 output += "\"\n                   form=\"superset-form\"\n                   class=\"mt-1 h-4 w-4 rounded border-gray-300 text-red-700 flex-shrink-0\">\n\n            ";
 output += "\n            <form method=\"POST\" action=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/items/";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"id"), env.opts.autoescape);
 output += "\"\n                  hx-post=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/items/";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"id"), env.opts.autoescape);
 output += "\"\n                  hx-target=\"#items-list\" hx-swap=\"outerHTML\"\n                  class=\"flex-1 min-w-0\">\n              <input type=\"hidden\" name=\"_csrf\" value=\"";
@@ -1777,31 +1941,31 @@ output += "\"\n                         min=\"1\" max=\"999\" required\n        
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"sets"), env.opts.autoescape);
 output += "\"\n                         min=\"1\" max=\"99\" required\n                         class=\"w-12 border border-gray-300 rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-red-500\">\n                  <span class=\"text-gray-500 text-xs\">sets</span>\n                </div>\n                <button type=\"submit\"\n                        class=\"text-xs bg-red-50 hover:bg-red-100 text-red-800 font-medium py-1 px-2 rounded transition-colors flex-shrink-0\">\n                  Save\n                </button>\n              </div>\n            </form>\n\n            ";
 output += "\n            <div class=\"flex flex-col gap-1 flex-shrink-0\">\n              <form method=\"POST\" action=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/items/";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"id"), env.opts.autoescape);
 output += "/move\"\n                    hx-post=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/items/";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"id"), env.opts.autoescape);
 output += "/move\"\n                    hx-target=\"#items-list\" hx-swap=\"outerHTML\">\n                <input type=\"hidden\" name=\"_csrf\" value=\"";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
 output += "\">\n                <input type=\"hidden\" name=\"direction\" value=\"up\">\n                <button type=\"submit\" title=\"Move up\"\n                        class=\"text-gray-400 hover:text-gray-600 p-0.5 leading-none\">&#8593;</button>\n              </form>\n              <form method=\"POST\" action=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/items/";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"id"), env.opts.autoescape);
 output += "/move\"\n                    hx-post=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/items/";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"id"), env.opts.autoescape);
 output += "/move\"\n                    hx-target=\"#items-list\" hx-swap=\"outerHTML\">\n                <input type=\"hidden\" name=\"_csrf\" value=\"";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
 output += "\">\n                <input type=\"hidden\" name=\"direction\" value=\"down\">\n                <button type=\"submit\" title=\"Move down\"\n                        class=\"text-gray-400 hover:text-gray-600 p-0.5 leading-none\">&#8595;</button>\n              </form>\n              <form method=\"POST\" action=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/items/";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"id"), env.opts.autoescape);
 output += "/delete\"\n                    hx-post=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/items/";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"id"), env.opts.autoescape);
 output += "/delete\"\n                    hx-target=\"#items-list\" hx-swap=\"outerHTML\">\n                <input type=\"hidden\" name=\"_csrf\" value=\"";
@@ -1813,21 +1977,21 @@ else {
 output += "\n        ";
 output += "\n        <div class=\"border-2 border-red-200 rounded-lg bg-red-50 overflow-hidden\">\n\n          ";
 output += "\n          <div class=\"flex items-center justify-between px-3 py-1.5 bg-red-100 border-b border-red-200\">\n            <span class=\"text-xs font-semibold text-red-800 uppercase tracking-wide\">Superset</span>\n            <div class=\"flex gap-2\">\n              <form method=\"POST\" action=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/items/";
 output += runtime.suppressValue(runtime.memberLookup((runtime.memberLookup((runtime.memberLookup((t_4),"items")),0)),"id"), env.opts.autoescape);
 output += "/move\"\n                    hx-post=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/items/";
 output += runtime.suppressValue(runtime.memberLookup((runtime.memberLookup((runtime.memberLookup((t_4),"items")),0)),"id"), env.opts.autoescape);
 output += "/move\"\n                    hx-target=\"#items-list\" hx-swap=\"outerHTML\" class=\"inline\">\n                <input type=\"hidden\" name=\"_csrf\" value=\"";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
 output += "\">\n                <input type=\"hidden\" name=\"direction\" value=\"up\">\n                <button type=\"submit\" title=\"Move group up\"\n                        class=\"text-red-500 hover:text-red-800 text-sm px-1\">&#8593;</button>\n              </form>\n              <form method=\"POST\" action=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/items/";
 output += runtime.suppressValue(runtime.memberLookup((runtime.memberLookup((runtime.memberLookup((t_4),"items")),0)),"id"), env.opts.autoescape);
 output += "/move\"\n                    hx-post=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/items/";
 output += runtime.suppressValue(runtime.memberLookup((runtime.memberLookup((runtime.memberLookup((t_4),"items")),0)),"id"), env.opts.autoescape);
 output += "/move\"\n                    hx-target=\"#items-list\" hx-swap=\"outerHTML\" class=\"inline\">\n                <input type=\"hidden\" name=\"_csrf\" value=\"";
@@ -1850,11 +2014,11 @@ frame.set("loop.last", t_6 === t_7 - 1);
 frame.set("loop.length", t_7);
 output += "\n              <div class=\"flex items-start gap-2 p-3\">\n\n                ";
 output += "\n                <form method=\"POST\" action=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/items/";
 output += runtime.suppressValue(runtime.memberLookup((t_9),"id"), env.opts.autoescape);
 output += "\"\n                      hx-post=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/items/";
 output += runtime.suppressValue(runtime.memberLookup((t_9),"id"), env.opts.autoescape);
 output += "\"\n                      hx-target=\"#items-list\" hx-swap=\"outerHTML\"\n                      class=\"flex-1 min-w-0\">\n                  <input type=\"hidden\" name=\"_csrf\" value=\"";
@@ -1869,21 +2033,21 @@ output += "\"\n                             min=\"1\" max=\"999\" required\n    
 output += runtime.suppressValue(runtime.memberLookup((t_9),"sets"), env.opts.autoescape);
 output += "\"\n                             min=\"1\" max=\"99\" required\n                             class=\"w-12 border border-red-200 rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-red-500 bg-white\">\n                      <span class=\"text-gray-500 text-xs\">sets</span>\n                    </div>\n                    <button type=\"submit\"\n                            class=\"text-xs bg-red-100 hover:bg-red-200 text-red-800 font-medium py-1 px-2 rounded transition-colors flex-shrink-0\">\n                      Save\n                    </button>\n                  </div>\n                </form>\n\n                ";
 output += "\n                <div class=\"flex flex-col gap-1 flex-shrink-0\">\n                  <form method=\"POST\" action=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/items/";
 output += runtime.suppressValue(runtime.memberLookup((t_9),"id"), env.opts.autoescape);
 output += "/unsuperset\"\n                        hx-post=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/items/";
 output += runtime.suppressValue(runtime.memberLookup((t_9),"id"), env.opts.autoescape);
 output += "/unsuperset\"\n                        hx-target=\"#items-list\" hx-swap=\"outerHTML\">\n                    <input type=\"hidden\" name=\"_csrf\" value=\"";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
 output += "\">\n                    <button type=\"submit\" title=\"Remove from superset\"\n                            class=\"text-xs text-red-500 hover:text-red-800 p-0.5 leading-none whitespace-nowrap\">\n                      Ungroup\n                    </button>\n                  </form>\n                  <form method=\"POST\" action=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/items/";
 output += runtime.suppressValue(runtime.memberLookup((t_9),"id"), env.opts.autoescape);
 output += "/delete\"\n                        hx-post=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/items/";
 output += runtime.suppressValue(runtime.memberLookup((t_9),"id"), env.opts.autoescape);
 output += "/delete\"\n                        hx-target=\"#items-list\" hx-swap=\"outerHTML\">\n                    <input type=\"hidden\" name=\"_csrf\" value=\"";
@@ -1908,12 +2072,161 @@ output += "\n    <div class=\"mb-4\">\n      <button type=\"submit\" form=\"supe
 ;
 }
 output += "\n\n  <!-- Add lift form -->\n  <div class=\"border border-dashed border-gray-300 rounded-lg p-3\">\n    <p class=\"text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide\">Add lift</p>\n    <form method=\"POST\" action=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/items\"\n          hx-post=\"/routines/";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "day"), env.opts.autoescape);
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "routine")),"id"), env.opts.autoescape);
 output += "/items\"\n          hx-target=\"#items-list\" hx-swap=\"outerHTML\"\n          hx-on::after-request=\"this.reset()\">\n      <input type=\"hidden\" name=\"_csrf\" value=\"";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
 output += "\">\n      <div class=\"flex flex-wrap gap-2 items-center\">\n        <input type=\"text\" name=\"lift_name\" placeholder=\"Lift name\" required maxlength=\"100\"\n               class=\"flex-1 min-w-32 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500\">\n        <div class=\"flex items-center gap-1 flex-shrink-0\">\n          <input type=\"number\" name=\"reps_min\" value=\"8\" min=\"1\" max=\"999\" required\n                 class=\"w-14 border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-red-500\">\n          <span class=\"text-gray-400 text-xs\">–</span>\n          <input type=\"number\" name=\"reps_max\" value=\"12\" min=\"1\" max=\"999\" required\n                 class=\"w-14 border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-red-500\">\n          <span class=\"text-gray-500 text-xs ml-1\">reps</span>\n        </div>\n        <div class=\"flex items-center gap-1 flex-shrink-0\">\n          <input type=\"number\" name=\"sets\" value=\"3\" min=\"1\" max=\"99\" required\n                 class=\"w-12 border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-red-500\">\n          <span class=\"text-gray-500 text-xs\">sets</span>\n        </div>\n        <button type=\"submit\"\n                class=\"bg-red-700 hover:bg-red-800 text-white text-sm font-medium py-1.5 px-3 rounded transition-colors flex-shrink-0\">\n          + Add\n        </button>\n      </div>\n    </form>\n  </div>\n\n</div>\n";
+if(parentTemplate) {
+parentTemplate.rootRenderFunc(env, context, frame, runtime, cb);
+} else {
+cb(null, output);
+}
+;
+} catch (e) {
+  cb(runtime.handleError(e, lineno, colno));
+}
+}
+return {
+root: root
+};
+
+  })(),
+  "partials/routines/manager.njk": (function() {
+function root(env, context, frame, runtime, cb) {
+var lineno = 0;
+var colno = 0;
+var output = "";
+try {
+var parentTemplate = null;
+output += "<div id=\"routines-manager\">\n\n  <!-- Weekly schedule: which routine runs on each day -->\n  <h2 class=\"text-xl font-semibold mb-1\">Weekly Schedule</h2>\n  <p class=\"text-sm text-gray-500 mb-4\">\n    The routine each day starts with. You can still swap in a different one on the day itself.\n  </p>\n\n  <ul class=\"divide-y divide-gray-200 border border-gray-200 rounded-lg overflow-hidden mb-8\">\n    ";
+frame = frame.push();
+var t_3 = runtime.contextOrFrameLookup(context, frame, "days");
+if(t_3) {t_3 = runtime.fromIterator(t_3);
+var t_2 = t_3.length;
+for(var t_1=0; t_1 < t_3.length; t_1++) {
+var t_4 = t_3[t_1];
+frame.set("day", t_4);
+frame.set("loop.index", t_1 + 1);
+frame.set("loop.index0", t_1);
+frame.set("loop.revindex", t_2 - t_1);
+frame.set("loop.revindex0", t_2 - t_1 - 1);
+frame.set("loop.first", t_1 === 0);
+frame.set("loop.last", t_1 === t_2 - 1);
+frame.set("loop.length", t_2);
+output += "\n      <li class=\"flex items-center justify-between gap-3 px-4 py-3\">\n        <span class=\"font-medium text-gray-900 text-sm flex-shrink-0\">";
+output += runtime.suppressValue(runtime.memberLookup((t_4),"name"), env.opts.autoescape);
+output += "</span>\n        <form method=\"POST\" action=\"/routines/schedule/";
+output += runtime.suppressValue(runtime.memberLookup((t_4),"weekday"), env.opts.autoescape);
+output += "\"\n              hx-post=\"/routines/schedule/";
+output += runtime.suppressValue(runtime.memberLookup((t_4),"weekday"), env.opts.autoescape);
+output += "\"\n              hx-target=\"#routines-manager\" hx-swap=\"outerHTML\"\n              hx-trigger=\"change from:find select\"\n              class=\"flex-1 min-w-0 flex justify-end\">\n          <input type=\"hidden\" name=\"_csrf\" value=\"";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
+output += "\">\n          <select name=\"routine_id\"\n                  class=\"max-w-full border border-gray-300 rounded px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500\">\n            <option value=\"\" ";
+if(!runtime.memberLookup((t_4),"routine")) {
+output += "selected";
+;
+}
+output += ">Rest day</option>\n            ";
+frame = frame.push();
+var t_7 = runtime.contextOrFrameLookup(context, frame, "routines");
+if(t_7) {t_7 = runtime.fromIterator(t_7);
+var t_6 = t_7.length;
+for(var t_5=0; t_5 < t_7.length; t_5++) {
+var t_8 = t_7[t_5];
+frame.set("r", t_8);
+frame.set("loop.index", t_5 + 1);
+frame.set("loop.index0", t_5);
+frame.set("loop.revindex", t_6 - t_5);
+frame.set("loop.revindex0", t_6 - t_5 - 1);
+frame.set("loop.first", t_5 === 0);
+frame.set("loop.last", t_5 === t_6 - 1);
+frame.set("loop.length", t_6);
+output += "\n              <option value=\"";
+output += runtime.suppressValue(runtime.memberLookup((t_8),"id"), env.opts.autoescape);
+output += "\"\n                      ";
+if(runtime.memberLookup((t_4),"routine") && runtime.memberLookup((runtime.memberLookup((t_4),"routine")),"id") == runtime.memberLookup((t_8),"id")) {
+output += "selected";
+;
+}
+output += ">";
+output += runtime.suppressValue(runtime.memberLookup((t_8),"name"), env.opts.autoescape);
+output += "</option>\n            ";
+;
+}
+}
+frame = frame.pop();
+output += "\n          </select>\n        </form>\n      </li>\n    ";
+;
+}
+}
+frame = frame.pop();
+output += "\n  </ul>\n\n  <!-- Routine library: every routine, scheduled or not -->\n  <h2 class=\"text-xl font-semibold mb-1\">My Routines</h2>\n  <p class=\"text-sm text-gray-500 mb-4\">\n    Reusable workouts. Keep variations here &mdash; different equipment, shorter sessions, travel days.\n  </p>\n\n  ";
+if(env.getFilter("length").call(context, runtime.contextOrFrameLookup(context, frame, "routines")) == 0) {
+output += "\n    <p class=\"text-center text-sm text-gray-400 py-6 border border-dashed border-gray-300 rounded-lg mb-4\">\n      No routines yet. Create your first one below.\n    </p>\n  ";
+;
+}
+else {
+output += "\n    <ul class=\"divide-y divide-gray-200 border border-gray-200 rounded-lg overflow-hidden mb-4\">\n      ";
+frame = frame.push();
+var t_11 = runtime.contextOrFrameLookup(context, frame, "routines");
+if(t_11) {t_11 = runtime.fromIterator(t_11);
+var t_10 = t_11.length;
+for(var t_9=0; t_9 < t_11.length; t_9++) {
+var t_12 = t_11[t_9];
+frame.set("r", t_12);
+frame.set("loop.index", t_9 + 1);
+frame.set("loop.index0", t_9);
+frame.set("loop.revindex", t_10 - t_9);
+frame.set("loop.revindex0", t_10 - t_9 - 1);
+frame.set("loop.first", t_9 === 0);
+frame.set("loop.last", t_9 === t_10 - 1);
+frame.set("loop.length", t_10);
+output += "\n        <li>\n          <a href=\"/routines/";
+output += runtime.suppressValue(runtime.memberLookup((t_12),"id"), env.opts.autoescape);
+output += "\"\n             class=\"flex items-center justify-between gap-3 px-4 py-3 hover:bg-gray-50 transition-colors\">\n            <div class=\"min-w-0\">\n              <p class=\"font-medium text-gray-900 text-sm truncate\">";
+output += runtime.suppressValue(runtime.memberLookup((t_12),"name"), env.opts.autoescape);
+output += "</p>\n              <p class=\"text-xs text-gray-500\">\n                ";
+output += runtime.suppressValue(runtime.memberLookup((t_12),"lift_count"), env.opts.autoescape);
+output += " lift";
+if(runtime.memberLookup((t_12),"lift_count") != 1) {
+output += "s";
+;
+}
+output += "\n              </p>\n            </div>\n            <div class=\"flex items-center gap-1.5 flex-shrink-0\">\n              ";
+frame = frame.push();
+var t_15 = runtime.memberLookup((t_12),"dayNames");
+if(t_15) {t_15 = runtime.fromIterator(t_15);
+var t_14 = t_15.length;
+for(var t_13=0; t_13 < t_15.length; t_13++) {
+var t_16 = t_15[t_13];
+frame.set("d", t_16);
+frame.set("loop.index", t_13 + 1);
+frame.set("loop.index0", t_13);
+frame.set("loop.revindex", t_14 - t_13);
+frame.set("loop.revindex0", t_14 - t_13 - 1);
+frame.set("loop.first", t_13 === 0);
+frame.set("loop.last", t_13 === t_14 - 1);
+frame.set("loop.length", t_14);
+output += "\n                <span class=\"text-xs font-medium bg-red-50 text-red-800 rounded px-1.5 py-0.5\">";
+output += runtime.suppressValue(t_16, env.opts.autoescape);
+output += "</span>\n              ";
+;
+}
+}
+frame = frame.pop();
+output += "\n              <svg class=\"w-4 h-4 text-gray-400\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">\n                <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 5l7 7-7 7\"/>\n              </svg>\n            </div>\n          </a>\n        </li>\n      ";
+;
+}
+}
+frame = frame.pop();
+output += "\n    </ul>\n  ";
+;
+}
+output += "\n\n  <!-- New routine -->\n  <div class=\"border border-dashed border-gray-300 rounded-lg p-3\">\n    <p class=\"text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide\">New routine</p>\n    <form method=\"POST\" action=\"/routines\" class=\"flex gap-2 items-center\">\n      <input type=\"hidden\" name=\"_csrf\" value=\"";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "csrfToken"), env.opts.autoescape);
+output += "\">\n      <input type=\"text\" name=\"name\" placeholder=\"e.g. Chest & Back — Dumbbells\"\n             required maxlength=\"100\"\n             class=\"flex-1 min-w-0 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500\">\n      <button type=\"submit\"\n              class=\"bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium py-1.5 px-3 rounded transition-colors flex-shrink-0\">\n        + Create\n      </button>\n    </form>\n  </div>\n\n</div>\n";
 if(parentTemplate) {
 parentTemplate.rootRenderFunc(env, context, frame, runtime, cb);
 } else {

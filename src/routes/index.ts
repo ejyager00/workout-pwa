@@ -69,7 +69,6 @@ interface DailyOverride {
 
 interface Routine {
   id: string;
-  weekday: number;
   name: string;
 }
 
@@ -170,9 +169,52 @@ function flattenGroups(groups: OverrideGroup[]): OverrideItem[] {
   return groups.flatMap((g) => g.items.map((item) => ({ ...item, position: pos++ })));
 }
 
+/** The routine the weekly schedule assigns to a weekday, if any. */
+async function getScheduledRoutine(
+  db: D1Database,
+  userId: string,
+  weekday: number
+): Promise<Routine | null> {
+  return db
+    .prepare(
+      `SELECT r.id, r.name
+         FROM routine_schedule s
+         JOIN routines r ON r.id = s.routine_id
+        WHERE s.user_id = ? AND s.weekday = ?`
+    )
+    .bind(userId, weekday)
+    .first<Routine>();
+}
+
 /**
- * Gets today's daily_override, or snapshots the current routine items into a
- * new override row (lazy creation on first mutation).
+ * Copies a routine's items into the shape daily_overrides stores.
+ *
+ * Item ids are carried over from routine_items rather than regenerated, so the
+ * ids rendered on the page still match after the first mutation lazily creates
+ * the override row.
+ */
+async function snapshotRoutineItems(
+  db: D1Database,
+  routineId: string
+): Promise<OverrideItem[]> {
+  const rows = await db
+    .prepare("SELECT * FROM routine_items WHERE routine_id = ? ORDER BY position")
+    .bind(routineId)
+    .all<RoutineItem>();
+  return rows.results.map((ri) => ({
+    id: ri.id,
+    superset_id: ri.superset_id,
+    position: ri.position,
+    lift_name: ri.lift_name,
+    reps_min: ri.reps_min,
+    reps_max: ri.reps_max,
+    sets: ri.sets,
+  }));
+}
+
+/**
+ * Gets today's daily_override, or snapshots the scheduled routine into a new
+ * override row (lazy creation on first mutation).
  */
 async function getOrSnapshotOverride(
   db: D1Database,
@@ -189,28 +231,8 @@ async function getOrSnapshotOverride(
     return { id: existing.id, items: JSON.parse(existing.items_json) };
   }
 
-  // Snapshot routine items
-  const routine = await db
-    .prepare("SELECT id FROM routines WHERE user_id = ? AND weekday = ?")
-    .bind(userId, weekday)
-    .first<{ id: string }>();
-
-  let items: OverrideItem[] = [];
-  if (routine) {
-    const rows = await db
-      .prepare("SELECT * FROM routine_items WHERE routine_id = ? ORDER BY position")
-      .bind(routine.id)
-      .all<RoutineItem>();
-    items = rows.results.map((ri) => ({
-      id: crypto.randomUUID(),
-      superset_id: ri.superset_id,
-      position: ri.position,
-      lift_name: ri.lift_name,
-      reps_min: ri.reps_min,
-      reps_max: ri.reps_max,
-      sets: ri.sets,
-    }));
-  }
+  const routine = await getScheduledRoutine(db, userId, weekday);
+  const items = routine ? await snapshotRoutineItems(db, routine.id) : [];
 
   const overrideId = crypto.randomUUID();
   const now = Math.floor(Date.now() / 1000);
@@ -236,50 +258,48 @@ async function updateOverrideItems(
     .run();
 }
 
-/** Loads all data needed to render the home page. */
+/**
+ * Loads all data needed to render the home page.
+ *
+ * Today's lifts come from one of two places: the daily_overrides row if the day
+ * has been swapped or customized, otherwise the routine the weekly schedule
+ * assigns to this weekday. `routine` is whichever routine today is actually
+ * built from — not necessarily `scheduledRoutine`.
+ */
 async function loadHomeData(
   db: D1Database,
   userId: string,
   today: string,
   weekday: number
 ) {
-  const [overrideRow, routine, settings] = await Promise.all([
+  const [overrideRow, scheduledRoutine, settings, routineRows] = await Promise.all([
     db
       .prepare("SELECT * FROM daily_overrides WHERE user_id = ? AND date = ?")
       .bind(userId, today)
       .first<DailyOverride>(),
-    db
-      .prepare("SELECT id, weekday, name FROM routines WHERE user_id = ? AND weekday = ?")
-      .bind(userId, weekday)
-      .first<Routine>(),
+    getScheduledRoutine(db, userId, weekday),
     db
       .prepare("SELECT inline_logging, webhook_url FROM user_settings WHERE user_id = ?")
       .bind(userId)
       .first<UserSettings>(),
+    db
+      .prepare("SELECT id, name FROM routines WHERE user_id = ? ORDER BY name COLLATE NOCASE")
+      .bind(userId)
+      .all<Routine>(),
   ]);
 
   let items: OverrideItem[];
+  let routine: Routine | null;
   let completed = false;
 
   if (overrideRow) {
     items = JSON.parse(overrideRow.items_json);
     completed = overrideRow.completed === 1;
-  } else if (routine) {
-    const rows = await db
-      .prepare("SELECT * FROM routine_items WHERE routine_id = ? ORDER BY position")
-      .bind(routine.id)
-      .all<RoutineItem>();
-    items = rows.results.map((ri) => ({
-      id: ri.id,
-      superset_id: ri.superset_id,
-      position: ri.position,
-      lift_name: ri.lift_name,
-      reps_min: ri.reps_min,
-      reps_max: ri.reps_max,
-      sets: ri.sets,
-    }));
+    // routine_id is NULL once the routine today was built from has been deleted
+    routine = routineRows.results.find((r) => r.id === overrideRow.routine_id) ?? null;
   } else {
-    items = [];
+    routine = scheduledRoutine;
+    items = scheduledRoutine ? await snapshotRoutineItems(db, scheduledRoutine.id) : [];
   }
 
   // Load all lift_stats for user in one query, then index by lift_name
@@ -291,7 +311,10 @@ async function loadHomeData(
 
   return {
     items,
-    routine: routine ?? null,
+    routine,
+    scheduledRoutine,
+    routines: routineRows.results,
+    overridden: overrideRow !== null,
     completed,
     inlineLogging: (settings?.inline_logging ?? 0) === 1,
     webhookUrl: settings?.webhook_url ?? null,
@@ -314,8 +337,13 @@ async function renderLiftsPanel(
   return c.html(
     render("partials/home/lifts-panel.njk", {
       groups,
+      routine: data.routine,
+      scheduledRoutine: data.scheduledRoutine,
+      routines: data.routines,
+      overridden: data.overridden,
       inlineLogging: data.inlineLogging,
       completed: data.completed,
+      dayName: DAYS[weekday],
       today,
       weekday,
       csrfToken,
@@ -413,11 +441,70 @@ index.get("/", async (c) => {
       dayName: DAYS[weekday],
       today,
       routine: data.routine,
+      scheduledRoutine: data.scheduledRoutine,
+      routines: data.routines,
+      overridden: data.overridden,
       groups,
       inlineLogging: data.inlineLogging,
       completed: data.completed,
     })
   );
+});
+
+// ---------------------------------------------------------------------------
+// POST /override/routine — run a different routine today
+//
+// Swapping is just the widest possible daily override: today's whole item list
+// is replaced with a snapshot of the chosen routine. The weekly schedule is
+// left alone — changing that permanently is done on /routines.
+// ---------------------------------------------------------------------------
+index.post("/override/routine", csrfMiddleware, async (c) => {
+  const { today, weekday } = getTodayInfo();
+  const userId = c.get("userId");
+  const body = await c.req.parseBody();
+  const routineId = ((body.routine_id as string) ?? "").trim();
+
+  const routine = routineId
+    ? await c.env.DB.prepare("SELECT id, name FROM routines WHERE id = ? AND user_id = ?")
+        .bind(routineId, userId)
+        .first<Routine>()
+    : null;
+
+  if (routine) {
+    const items = await snapshotRoutineItems(c.env.DB, routine.id);
+    const now = Math.floor(Date.now() / 1000);
+
+    await c.env.DB.prepare(
+      "INSERT INTO daily_overrides (id, user_id, date, routine_id, items_json, completed, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 0, ?, ?) " +
+        "ON CONFLICT(user_id, date) DO UPDATE SET routine_id = excluded.routine_id, items_json = excluded.items_json, updated_at = excluded.updated_at"
+    )
+      .bind(
+        crypto.randomUUID(),
+        userId,
+        today,
+        routine.id,
+        JSON.stringify(items),
+        now,
+        now
+      )
+      .run();
+  }
+
+  return renderLiftsPanel(c, userId, today, weekday);
+});
+
+// ---------------------------------------------------------------------------
+// POST /override/reset — drop today's customizations and follow the schedule
+// ---------------------------------------------------------------------------
+index.post("/override/reset", csrfMiddleware, async (c) => {
+  const { today, weekday } = getTodayInfo();
+  const userId = c.get("userId");
+
+  await c.env.DB.prepare("DELETE FROM daily_overrides WHERE user_id = ? AND date = ?")
+    .bind(userId, today)
+    .run();
+
+  return renderLiftsPanel(c, userId, today, weekday);
 });
 
 // ---------------------------------------------------------------------------
@@ -453,6 +540,46 @@ index.post("/override/items", csrfMiddleware, async (c) => {
   });
 
   await updateOverrideItems(c.env.DB, overrideId, items);
+  return renderLiftsPanel(c, userId, today, weekday);
+});
+
+// ---------------------------------------------------------------------------
+// POST /override/items/:id — edit a lift's name, rep range or set count
+//
+// Today only: the change lands in daily_overrides, never in routine_items.
+// ---------------------------------------------------------------------------
+index.post("/override/items/:id", csrfMiddleware, async (c) => {
+  const { today, weekday } = getTodayInfo();
+  const userId = c.get("userId");
+  const itemId = c.req.param("id");
+  const body = await c.req.parseBody();
+
+  const liftName = ((body.lift_name as string) ?? "").trim().slice(0, 100);
+  const repsMin = parseInt(body.reps_min as string);
+  const repsMax = parseInt(body.reps_max as string);
+  const sets = parseInt(body.sets as string);
+
+  if (!liftName || isNaN(repsMin) || isNaN(repsMax) || isNaN(sets)) {
+    return renderLiftsPanel(c, userId, today, weekday);
+  }
+
+  const { id: overrideId, items } = await getOrSnapshotOverride(
+    c.env.DB, userId, today, weekday
+  );
+
+  const updated = items.map((item) =>
+    item.id === itemId
+      ? {
+          ...item,
+          lift_name: liftName,
+          reps_min: repsMin,
+          reps_max: repsMax,
+          sets,
+        }
+      : item
+  );
+
+  await updateOverrideItems(c.env.DB, overrideId, updated);
   return renderLiftsPanel(c, userId, today, weekday);
 });
 
@@ -600,6 +727,17 @@ index.post("/complete", csrfMiddleware, async (c) => {
   // Fire webhook (best-effort, non-blocking)
   const webhookUrl = settings?.webhook_url;
   if (webhookUrl) {
+    // Which routine today was built from — the scheduled one unless it was
+    // swapped, and null if it was assembled ad hoc or has since been deleted.
+    const source = await c.env.DB.prepare(
+      `SELECT r.id, r.name
+         FROM daily_overrides d
+         LEFT JOIN routines r ON r.id = d.routine_id
+        WHERE d.id = ?`
+    )
+      .bind(overrideId)
+      .first<{ id: string | null; name: string | null }>();
+
     // Sort by position to guarantee execution order in the payload.
     // superset_id links items that are performed as a superset — items sharing
     // the same superset_id are interleaved set-for-set before moving on.
@@ -619,6 +757,8 @@ index.post("/complete", csrfMiddleware, async (c) => {
       date: today,
       completed: true,
       workout_id: workoutId,
+      routine_id: source?.id ?? null,
+      routine_name: source?.name ?? null,
       routine,
     });
     c.executionCtx.waitUntil(

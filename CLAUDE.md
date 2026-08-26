@@ -24,8 +24,8 @@ A mobile-first, progressive web app for strength training tracking. Built on Clo
 | Route | Purpose |
 |-------|---------|
 | `/` | Home / workout page — today's routine with inline logging |
-| `/routines` | Manage weekly routines (one per day of week) |
-| `/routines/:day` | Edit a specific day's routine |
+| `/routines` | Weekly schedule (weekday → routine) + the routine library |
+| `/routines/:id` | Edit a specific routine |
 | `/workouts` | Historical workout log with edit functionality |
 | `/workouts/new` | Dedicated workout entry page |
 | `/workouts/:id/edit` | Edit a previously logged workout |
@@ -40,15 +40,24 @@ A mobile-first, progressive web app for strength training tracking. Built on Clo
 ### Schema Design
 
 ```sql
--- Routines: one per user per weekday (0=Sun … 6=Sat)
+-- Routines: named, reusable lift lists. NOT tied to a weekday — a user may keep
+-- as many as they like (e.g. the same session adapted for different equipment).
 CREATE TABLE routines (
   id         TEXT PRIMARY KEY,
   user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  weekday    INTEGER NOT NULL CHECK(weekday BETWEEN 0 AND 6),
-  name       TEXT NOT NULL DEFAULT '',
+  name       TEXT NOT NULL,
   created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+-- Weekly schedule: which routine each weekday (0=Sun … 6=Sat) starts with.
+-- No row for a weekday = rest day. One routine may be scheduled on many days.
+CREATE TABLE routine_schedule (
+  user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  weekday    INTEGER NOT NULL CHECK(weekday BETWEEN 0 AND 6),
+  routine_id TEXT NOT NULL REFERENCES routines(id) ON DELETE CASCADE,
   updated_at INTEGER NOT NULL,
-  UNIQUE(user_id, weekday)
+  PRIMARY KEY (user_id, weekday)
 );
 
 -- Routine items: each row is a lift OR a superset group header
@@ -75,7 +84,7 @@ CREATE TABLE daily_overrides (
   id         TEXT PRIMARY KEY,
   user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   date       TEXT NOT NULL,      -- ISO date string "YYYY-MM-DD"
-  routine_id TEXT REFERENCES routines(id) ON DELETE SET NULL,
+  routine_id TEXT REFERENCES routines(id) ON DELETE SET NULL,  -- routine today was built from
   items_json TEXT NOT NULL,      -- JSON: ordered list of routine_item-like objects
   completed  INTEGER NOT NULL DEFAULT 0,  -- 1 = workout marked complete
   created_at INTEGER NOT NULL,
@@ -158,6 +167,28 @@ CREATE TABLE user_settings (
 );
 ```
 
+### Routine vs. Schedule vs. Today
+
+Three distinct things, deliberately not collapsed into one:
+
+| Concept | Where it lives | Scope |
+|---------|----------------|-------|
+| Routine | `routines` + `routine_items` | Reusable, no date or weekday |
+| Schedule | `routine_schedule` | Which routine a weekday starts with |
+| Today | `daily_overrides` | This date only |
+
+Swapping a routine for the day is not a separate mechanism — it is the widest
+possible daily override: a whole-list replacement of `items_json`, using the
+same lazy snapshot path as adding a lift or reordering one.
+
+`daily_overrides.routine_id` is the routine today was actually built from, which
+is not necessarily the scheduled one. It is NULL when the day was assembled ad
+hoc or when its source routine has since been deleted.
+
+Snapshots carry `routine_items.id` through to the override items rather than
+generating fresh ids, so the ids rendered on the page still resolve after the
+first mutation lazily creates the override row.
+
 ### Superset Design
 
 Supersets are modeled by a shared `superset_id` UUID on sibling rows in `routine_items` or `workout_lifts`. There is no separate superset table. To render:
@@ -194,24 +225,39 @@ The `lifts` table is admin-managed (via Cloudflare D1 web console) — no UI for
 
 ### Routines Page (`/routines`) ✅
 
-- Shows all 7 days of the week
-- Each day shows the routine name (if configured) or "No routine" with a create button
-- Click a day to go to `/routines/:day` (0–6)
-- On `/routines/:day`: full routine editor
+Two sections, rendered together in `partials/routines/manager.njk` (one htmx
+target, because scheduling a routine also changes the day chips in the library):
+
+- **Weekly Schedule** — all 7 days, each with a `<select>` of the user's routines
+  plus "Rest day". Changing it htmx-POSTs to `/routines/schedule/:weekday`.
+- **My Routines** — every routine with lift count and the days it's scheduled on.
+  Create by name, tap to edit, duplicate, delete.
+
+- On `/routines/:id`: full routine editor
   - Add/remove/reorder lifts (up/down buttons)
   - Set lift name (free text), rep range (min–max), set count
   - Group lifts into a superset (select adjacent lifts → "Make superset" button)
   - Remove a lift from a superset ("Remove from superset" button)
+  - Duplicate the routine (copies all items; superset ids are regenerated so the
+    copy's groupings are independent) or delete it
 
 ### Home / Workout Page (`/`) ✅
 
-- Determines today's weekday, loads the user's routine for that day
-- If a `daily_override` exists for today, use it instead of the base routine
+- Determines today's weekday, loads the routine `routine_schedule` assigns to it
+- If a `daily_override` exists for today, use it instead of the scheduled routine
+- **Swap routine** — a `<select>` in the panel header lists every routine; picking
+  one POSTs `/override/routine`, which replaces today's whole item list with a
+  snapshot of that routine and records it in `daily_overrides.routine_id`. The
+  weekly schedule is untouched; permanent changes are made on `/routines`.
+- Once today diverges from the schedule, a line reads "Instead of <scheduled>"
+  (or "Customized for today") with a **Reset** link → `POST /override/reset`,
+  which deletes the override row so the day follows the schedule again.
 - Shows each lift (or superset group) with:
   - Lift name, rep range, set count
   - Most recent performance: date + sets (from `lift_stats.recent_*`)
   - Best performance: date + sets (from `lift_stats.best_*`)
 - Reorder / swap / add / remove lifts for today only → auto-saves to `daily_overrides` via htmx POST
+- Tap a lift's name to open an inline editor (name, rep range, set count) → `POST /override/items/:id`, today only; the source routine is untouched
 - Pop lift out of / push lift into a superset → same auto-save mechanism
 - **"Complete Workout" button** at bottom:
   - Marks `daily_overrides.completed = 1`
@@ -306,6 +352,8 @@ After "Complete Workout":
   "date": "2026-03-05",
   "completed": true,
   "workout_id": "uuid-or-null",
+  "routine_id": "uuid-or-null",
+  "routine_name": "Chest & Back — Dumbbells",
   "routine": [
     { "position": 0, "lift_name": "Squat", "superset_id": null, "sets": 3, "reps_min": 3, "reps_max": 5 },
     { "position": 1, "lift_name": "Bench", "superset_id": "uuid", "sets": 3, "reps_min": 8, "reps_max": 12 },
@@ -364,6 +412,7 @@ JWT + KV session architecture with API key support:
 | Bottom nav | ✅ Done |
 | PWA manifest + service worker | ✅ Done |
 | Historical workouts page + edit | ✅ Done |
+| Routine library + weekly schedule + daily swap | ✅ Done |
 | Lift library (`lifts` table + reverse_volume) | 🔲 Not started |
 
 ---

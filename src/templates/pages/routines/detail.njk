@@ -1,0 +1,59 @@
+{% extends "base.njk" %}
+
+{% block content %}
+<div class="max-w-lg mx-auto">
+
+  <div class="mb-6">
+    <a href="/routines" class="text-sm text-gray-500 hover:text-gray-700">&larr; All routines</a>
+  </div>
+
+  <!-- Routine name -->
+  <div class="mb-2">
+    <form method="POST" action="/routines/{{ routine.id }}/name" class="flex gap-2 items-center">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <input type="text" name="name" value="{{ routine.name }}"
+             placeholder="Routine name (e.g. Push Day)"
+             required maxlength="100"
+             class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+      <button type="submit"
+              class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium py-2 px-3 rounded transition-colors">
+        Save
+      </button>
+    </form>
+  </div>
+
+  <!-- Where this routine sits in the week -->
+  <div class="mb-6 flex items-center gap-2 flex-wrap">
+    {% if dayNames | length > 0 %}
+      <span class="text-xs text-gray-500">Scheduled on</span>
+      {% for d in dayNames %}
+        <span class="text-xs font-medium bg-red-50 text-red-800 rounded px-1.5 py-0.5">{{ d }}</span>
+      {% endfor %}
+    {% else %}
+      <span class="text-xs text-gray-400">Not scheduled &mdash; pick it from the home page any day you want it.</span>
+    {% endif %}
+  </div>
+
+  <!-- Items list (htmx target) -->
+  {% include "partials/routines/items-list.njk" %}
+
+  <!-- Routine-level actions -->
+  <div class="mt-8 pt-4 border-t border-gray-200 flex items-center justify-between">
+    <form method="POST" action="/routines/{{ routine.id }}/duplicate">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button type="submit"
+              class="text-sm text-gray-600 hover:text-gray-900 border border-gray-300 hover:border-gray-400 rounded px-3 py-1.5 transition-colors">
+        Duplicate
+      </button>
+    </form>
+    <form method="POST" action="/routines/{{ routine.id }}/delete"
+          onsubmit="return confirm('Delete “{{ routine.name }}”? This cannot be undone.')">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button type="submit" class="text-sm text-red-600 hover:text-red-800 px-2 py-1.5">
+        Delete routine
+      </button>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

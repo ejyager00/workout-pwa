@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const RoutineNameSchema = z.object({
-  name: z.string().max(100).default(""),
+  name: z.string().trim().min(1, "Routine name is required").max(100),
 });
 
 export const RoutineItemSchema = z.object({

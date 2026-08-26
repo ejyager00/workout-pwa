@@ -1,4 +1,111 @@
+{# ── Lift heading: name/reps, or a tap-to-open editor while the day is live ──
+   Edits land in daily_overrides only — the underlying routine is untouched. #}
+{% macro liftHeading(item, csrfToken, completed, superset=false) %}
+  {% if completed %}
+    <div class="flex-1 min-w-0">
+      <p class="font-medium text-gray-900 text-sm truncate">{{ item.lift_name }}</p>
+      <p class="text-xs text-gray-500">{{ item.reps_min }}–{{ item.reps_max }} reps &times; {{ item.sets }} sets</p>
+    </div>
+  {% else %}
+    {% set inputBorder = "border-red-200 bg-white" if superset else "border-gray-300" %}
+    <details class="flex-1 min-w-0">
+      <summary class="no-marker cursor-pointer">
+        <span class="block font-medium text-gray-900 text-sm truncate">{{ item.lift_name }}</span>
+        <span class="block text-xs text-gray-500">
+          {{ item.reps_min }}–{{ item.reps_max }} reps &times; {{ item.sets }} sets
+          <span class="text-gray-400">&middot; edit</span>
+        </span>
+      </summary>
+      <form method="POST" action="/override/items/{{ item.id }}"
+            hx-post="/override/items/{{ item.id }}"
+            hx-target="#lifts-panel" hx-swap="outerHTML"
+            class="mt-2 flex flex-wrap gap-2 items-center">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <input type="text" name="lift_name" value="{{ item.lift_name }}"
+               placeholder="Lift name" required maxlength="100"
+               class="flex-1 min-w-32 border {{ inputBorder }} rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-red-500">
+        <div class="flex items-center gap-1 flex-shrink-0">
+          <input type="number" name="reps_min" value="{{ item.reps_min }}" min="1" max="999" required
+                 class="w-14 border {{ inputBorder }} rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-red-500">
+          <span class="text-gray-400 text-xs">–</span>
+          <input type="number" name="reps_max" value="{{ item.reps_max }}" min="1" max="999" required
+                 class="w-14 border {{ inputBorder }} rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-red-500">
+          <span class="text-gray-500 text-xs ml-1">reps</span>
+        </div>
+        <div class="flex items-center gap-1 flex-shrink-0">
+          <input type="number" name="sets" value="{{ item.sets }}" min="1" max="99" required
+                 class="w-12 border {{ inputBorder }} rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-red-500">
+          <span class="text-gray-500 text-xs">sets</span>
+        </div>
+        <button type="submit"
+                class="text-xs bg-red-50 hover:bg-red-100 text-red-800 font-medium py-1 px-2 rounded transition-colors flex-shrink-0">
+          Save
+        </button>
+      </form>
+    </details>
+  {% endif %}
+{% endmacro %}
+
 <div id="lifts-panel">
+
+  {# ── Today's routine: what it is, and how to run a different one ── #}
+  <div class="mb-5">
+
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        {% if routine %}
+          <p class="text-sm font-medium text-gray-900 truncate">{{ routine.name }}</p>
+        {% elif groups | length > 0 %}
+          <p class="text-sm font-medium text-gray-900">Custom workout</p>
+        {% else %}
+          <p class="text-sm text-gray-400">Rest day</p>
+        {% endif %}
+      </div>
+
+      {% if not completed and routines | length > 0 %}
+        <form method="POST" action="/override/routine"
+              hx-post="/override/routine"
+              hx-target="#lifts-panel" hx-swap="outerHTML"
+              hx-trigger="change from:find select"
+              {# Only worth confirming when there are edits to lose #}
+              {% if overridden %}hx-confirm="Replace today's lifts with this routine?"{% endif %}
+              class="flex-shrink-0">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <select name="routine_id"
+                  class="border border-gray-300 rounded px-2 py-1 text-xs bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+            <option value="" selected>Swap routine…</option>
+            {% for r in routines %}
+              <option value="{{ r.id }}">{{ r.name }}</option>
+            {% endfor %}
+          </select>
+        </form>
+      {% endif %}
+    </div>
+
+    {# Only shown once today has diverged from the weekly schedule #}
+    {% if overridden and not completed %}
+      <div class="mt-1.5 flex items-center gap-2 text-xs text-gray-500">
+        <span class="min-w-0 truncate">
+          {% if routine and scheduledRoutine and routine.id == scheduledRoutine.id %}
+            Customized for today
+          {% elif scheduledRoutine %}
+            Instead of {{ scheduledRoutine.name }}
+          {% else %}
+            {{ dayName }} is normally a rest day
+          {% endif %}
+        </span>
+        <form method="POST" action="/override/reset"
+              hx-post="/override/reset"
+              hx-target="#lifts-panel" hx-swap="outerHTML"
+              hx-confirm="Discard today's changes and go back to the scheduled routine?"
+              class="flex-shrink-0">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button type="submit" class="underline hover:text-gray-700">Reset</button>
+        </form>
+      </div>
+    {% endif %}
+
+  </div>
 
   {# ── Hidden forms that inputs across the panel associate with ── #}
 
@@ -26,7 +133,7 @@
 
     {% if groups | length == 0 %}
       <p class="text-center text-sm text-gray-400 py-6">
-        No lifts yet today.{% if not completed %} Add one below.{% endif %}
+        No lifts yet today.{% if not completed %} Swap in a routine above, or add one below.{% endif %}
       </p>
     {% endif %}
 
@@ -43,10 +150,7 @@
                      form="superset-form"
                      class="mt-1 h-4 w-4 rounded border-gray-300 text-red-700 flex-shrink-0">
             {% endif %}
-            <div class="flex-1 min-w-0">
-              <p class="font-medium text-gray-900 text-sm truncate">{{ item.lift_name }}</p>
-              <p class="text-xs text-gray-500">{{ item.reps_min }}–{{ item.reps_max }} reps &times; {{ item.sets }} sets</p>
-            </div>
+            {{ liftHeading(item, csrfToken, completed) }}
             {% if not completed %}
               <div class="flex gap-1 flex-shrink-0">
                 <form method="POST" action="/override/items/{{ item.id }}/move"
@@ -147,10 +251,7 @@
               <div class="px-3 pt-2.5 pb-2">
 
                 <div class="flex items-start gap-2">
-                  <div class="flex-1 min-w-0">
-                    <p class="font-medium text-gray-900 text-sm truncate">{{ item.lift_name }}</p>
-                    <p class="text-xs text-gray-500">{{ item.reps_min }}–{{ item.reps_max }} reps &times; {{ item.sets }} sets</p>
-                  </div>
+                  {{ liftHeading(item, csrfToken, completed, true) }}
                   {% if not completed %}
                     <div class="flex items-center gap-2 flex-shrink-0">
                       <form method="POST" action="/override/items/{{ item.id }}/unsuperset"

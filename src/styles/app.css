@@ -95,3 +95,8 @@
   background-color: #1f2937;
   color: #f9fafb;
 }
+
+/* <details> disclosures used as inline edit toggles — hide the default marker
+   (list-style covers Firefox/Chrome; the pseudo-element covers WebKit/iOS) */
+summary.no-marker { list-style: none; }
+summary.no-marker::-webkit-details-marker { display: none; }

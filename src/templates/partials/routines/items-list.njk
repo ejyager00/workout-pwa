@@ -1,8 +1,8 @@
 <div id="items-list">
 
   {# Hidden superset form — checkboxes/button reference this via form="superset-form" #}
-  <form id="superset-form" method="POST" action="/routines/{{ day }}/superset"
-        hx-post="/routines/{{ day }}/superset"
+  <form id="superset-form" method="POST" action="/routines/{{ routine.id }}/superset"
+        hx-post="/routines/{{ routine.id }}/superset"
         hx-target="#items-list" hx-swap="outerHTML">
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
   </form>
@@ -28,8 +28,8 @@
                    class="mt-1 h-4 w-4 rounded border-gray-300 text-red-700 flex-shrink-0">
 
             {# Edit form #}
-            <form method="POST" action="/routines/{{ day }}/items/{{ item.id }}"
-                  hx-post="/routines/{{ day }}/items/{{ item.id }}"
+            <form method="POST" action="/routines/{{ routine.id }}/items/{{ item.id }}"
+                  hx-post="/routines/{{ routine.id }}/items/{{ item.id }}"
                   hx-target="#items-list" hx-swap="outerHTML"
                   class="flex-1 min-w-0">
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
@@ -62,24 +62,24 @@
 
             {# Move / delete buttons #}
             <div class="flex flex-col gap-1 flex-shrink-0">
-              <form method="POST" action="/routines/{{ day }}/items/{{ item.id }}/move"
-                    hx-post="/routines/{{ day }}/items/{{ item.id }}/move"
+              <form method="POST" action="/routines/{{ routine.id }}/items/{{ item.id }}/move"
+                    hx-post="/routines/{{ routine.id }}/items/{{ item.id }}/move"
                     hx-target="#items-list" hx-swap="outerHTML">
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <input type="hidden" name="direction" value="up">
                 <button type="submit" title="Move up"
                         class="text-gray-400 hover:text-gray-600 p-0.5 leading-none">&#8593;</button>
               </form>
-              <form method="POST" action="/routines/{{ day }}/items/{{ item.id }}/move"
-                    hx-post="/routines/{{ day }}/items/{{ item.id }}/move"
+              <form method="POST" action="/routines/{{ routine.id }}/items/{{ item.id }}/move"
+                    hx-post="/routines/{{ routine.id }}/items/{{ item.id }}/move"
                     hx-target="#items-list" hx-swap="outerHTML">
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <input type="hidden" name="direction" value="down">
                 <button type="submit" title="Move down"
                         class="text-gray-400 hover:text-gray-600 p-0.5 leading-none">&#8595;</button>
               </form>
-              <form method="POST" action="/routines/{{ day }}/items/{{ item.id }}/delete"
-                    hx-post="/routines/{{ day }}/items/{{ item.id }}/delete"
+              <form method="POST" action="/routines/{{ routine.id }}/items/{{ item.id }}/delete"
+                    hx-post="/routines/{{ routine.id }}/items/{{ item.id }}/delete"
                     hx-target="#items-list" hx-swap="outerHTML">
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <button type="submit" title="Remove lift"
@@ -99,16 +99,16 @@
           <div class="flex items-center justify-between px-3 py-1.5 bg-red-100 border-b border-red-200">
             <span class="text-xs font-semibold text-red-800 uppercase tracking-wide">Superset</span>
             <div class="flex gap-2">
-              <form method="POST" action="/routines/{{ day }}/items/{{ group.items[0].id }}/move"
-                    hx-post="/routines/{{ day }}/items/{{ group.items[0].id }}/move"
+              <form method="POST" action="/routines/{{ routine.id }}/items/{{ group.items[0].id }}/move"
+                    hx-post="/routines/{{ routine.id }}/items/{{ group.items[0].id }}/move"
                     hx-target="#items-list" hx-swap="outerHTML" class="inline">
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <input type="hidden" name="direction" value="up">
                 <button type="submit" title="Move group up"
                         class="text-red-500 hover:text-red-800 text-sm px-1">&#8593;</button>
               </form>
-              <form method="POST" action="/routines/{{ day }}/items/{{ group.items[0].id }}/move"
-                    hx-post="/routines/{{ day }}/items/{{ group.items[0].id }}/move"
+              <form method="POST" action="/routines/{{ routine.id }}/items/{{ group.items[0].id }}/move"
+                    hx-post="/routines/{{ routine.id }}/items/{{ group.items[0].id }}/move"
                     hx-target="#items-list" hx-swap="outerHTML" class="inline">
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <input type="hidden" name="direction" value="down">
@@ -124,8 +124,8 @@
               <div class="flex items-start gap-2 p-3">
 
                 {# Edit form #}
-                <form method="POST" action="/routines/{{ day }}/items/{{ item.id }}"
-                      hx-post="/routines/{{ day }}/items/{{ item.id }}"
+                <form method="POST" action="/routines/{{ routine.id }}/items/{{ item.id }}"
+                      hx-post="/routines/{{ routine.id }}/items/{{ item.id }}"
                       hx-target="#items-list" hx-swap="outerHTML"
                       class="flex-1 min-w-0">
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
@@ -158,8 +158,8 @@
 
                 {# Ungroup + delete buttons #}
                 <div class="flex flex-col gap-1 flex-shrink-0">
-                  <form method="POST" action="/routines/{{ day }}/items/{{ item.id }}/unsuperset"
-                        hx-post="/routines/{{ day }}/items/{{ item.id }}/unsuperset"
+                  <form method="POST" action="/routines/{{ routine.id }}/items/{{ item.id }}/unsuperset"
+                        hx-post="/routines/{{ routine.id }}/items/{{ item.id }}/unsuperset"
                         hx-target="#items-list" hx-swap="outerHTML">
                     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                     <button type="submit" title="Remove from superset"
@@ -167,8 +167,8 @@
                       Ungroup
                     </button>
                   </form>
-                  <form method="POST" action="/routines/{{ day }}/items/{{ item.id }}/delete"
-                        hx-post="/routines/{{ day }}/items/{{ item.id }}/delete"
+                  <form method="POST" action="/routines/{{ routine.id }}/items/{{ item.id }}/delete"
+                        hx-post="/routines/{{ routine.id }}/items/{{ item.id }}/delete"
                         hx-target="#items-list" hx-swap="outerHTML">
                     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                     <button type="submit" title="Remove lift"
@@ -200,8 +200,8 @@
   <!-- Add lift form -->
   <div class="border border-dashed border-gray-300 rounded-lg p-3">
     <p class="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">Add lift</p>
-    <form method="POST" action="/routines/{{ day }}/items"
-          hx-post="/routines/{{ day }}/items"
+    <form method="POST" action="/routines/{{ routine.id }}/items"
+          hx-post="/routines/{{ routine.id }}/items"
           hx-target="#items-list" hx-swap="outerHTML"
           hx-on::after-request="this.reset()">
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
