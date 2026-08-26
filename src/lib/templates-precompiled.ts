@@ -11,7 +11,7 @@ var colno = 0;
 var output = "";
 try {
 var parentTemplate = null;
-output += "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <!-- Apply dark class before CSS loads to prevent flash of unstyled content -->\n  <script>(function(){var m=document.cookie.match(/(?:^|;\\s*)dark_mode=1(?:;|$)/);if(m)document.documentElement.classList.add('dark');}());</script>\n  ";
+output += "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <!-- Apply dark class before CSS loads to prevent flash of unstyled content.\n       Exposed as a global so htmx swaps (login/signup replace <body>, dropping\n       this document's <head>) can re-apply it once the cookie changes. -->\n  <script>\n    window.applyTheme = function () {\n      var on = /(?:^|;\\s*)dark_mode=1(?:;|$)/.test(document.cookie);\n      document.documentElement.classList.toggle('dark', on);\n    };\n    window.applyTheme();\n\n    // Logging in or out swaps <body>, so the new document's <head> — and this\n    // script — never runs, leaving the stale theme on <html>. Re-apply after\n    // every htmx swap instead. Registered here (on document, which htmx events\n    // bubble to) so it is installed exactly once per real page load.\n    document.addEventListener('htmx:afterSwap', window.applyTheme);\n  </script>\n  ";
 var tasks = [];
 tasks.push(
 function(callback) {
@@ -129,7 +129,7 @@ cb(null, output);
 }
 }
 function b_content(env, context, frame, runtime, cb) {
-var lineno = 13;
+var lineno = 27;
 var colno = 7;
 var output = "";
 try {

@@ -53,6 +53,16 @@ describe("GET /auth/login", () => {
     expect(text).toContain("cf-turnstile");
     expect(text).toContain('name="_csrf"');
   });
+
+  it("re-applies the theme after htmx swaps", async () => {
+    // Logging in swaps <body>, so the incoming document's head script never
+    // runs — without this listener the page keeps the logged-out theme until
+    // the next full navigation.
+    const res = await SELF.fetch("http://localhost/auth/login");
+    const text = await res.text();
+    expect(text).toContain("window.applyTheme");
+    expect(text).toContain("htmx:afterSwap");
+  });
 });
 
 describe("POST /auth/signup", () => {
@@ -164,6 +174,37 @@ describe("POST /auth/login", () => {
     });
     expect(res.status).toBe(302);
     expect(res.headers.get("Location")).toBe("/");
+  });
+
+  it("sets the dark_mode cookie from the user's saved setting", async () => {
+    const now = Date.now();
+    await env.DB.prepare(
+      "INSERT OR REPLACE INTO user_settings (user_id, inline_logging, dark_mode, webhook_url, updated_at) VALUES (?, 0, 1, NULL, ?)"
+    )
+      .bind(user.id, now)
+      .run();
+
+    const { body, csrfCookie } = formBodyWithCsrf({
+      username: user.username,
+      password: user.password,
+      turnstileToken: "test-token",
+    });
+    const res = await SELF.fetch("http://localhost/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Cookie: csrfCookie,
+      },
+      body,
+      redirect: "manual",
+    });
+
+    // Non-HttpOnly: the layout's head script reads it to set the theme class.
+    const cookies = res.headers.getSetCookie();
+    const darkCookie = cookies.find((ck) => ck.startsWith("dark_mode="));
+    expect(darkCookie).toBeDefined();
+    expect(darkCookie).toContain("dark_mode=1");
+    expect(darkCookie).not.toContain("HttpOnly");
   });
 
   it("rejects wrong password with 401", async () => {

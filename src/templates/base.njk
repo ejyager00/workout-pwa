@@ -1,8 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Apply dark class before CSS loads to prevent flash of unstyled content -->
-  <script>(function(){var m=document.cookie.match(/(?:^|;\s*)dark_mode=1(?:;|$)/);if(m)document.documentElement.classList.add('dark');}());</script>
+  <!-- Apply dark class before CSS loads to prevent flash of unstyled content.
+       Exposed as a global so htmx swaps (login/signup replace <body>, dropping
+       this document's <head>) can re-apply it once the cookie changes. -->
+  <script>
+    window.applyTheme = function () {
+      var on = /(?:^|;\s*)dark_mode=1(?:;|$)/.test(document.cookie);
+      document.documentElement.classList.toggle('dark', on);
+    };
+    window.applyTheme();
+
+    // Logging in or out swaps <body>, so the new document's <head> — and this
+    // script — never runs, leaving the stale theme on <html>. Re-apply after
+    // every htmx swap instead. Registered here (on document, which htmx events
+    // bubble to) so it is installed exactly once per real page load.
+    document.addEventListener('htmx:afterSwap', window.applyTheme);
+  </script>
   {% include "partials/head.njk" %}
 </head>
 <body class="bg-white text-gray-900 min-h-screen flex flex-col">
