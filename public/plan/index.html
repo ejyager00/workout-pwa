@@ -1,0 +1,982 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Training plan</title>
+<!-- Match the app's theme toggle. base.njk sets a dark_mode cookie on the same
+     origin; read it before first paint to avoid a flash. No cookie = follow the OS. -->
+<script>
+  (function () {
+    var m = /(?:^|;\s*)dark_mode=(\d)/.exec(document.cookie);
+    if (m) document.documentElement.dataset.theme = m[1] === '1' ? 'dark' : 'light';
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Public+Sans:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EFEDE7; --card:#FFFFFF; --ink:#17171A; --mute:#6B6862;
+  --rule:#D8D5CD; --plum:#6E2246; --plum-soft:#F3E7ED;
+  --plum-fill:#6E2246; --on-plum:#FFFFFF; --plum-edge:rgba(110,34,70,.35);
+  --squat:#6E2246; --hinge:#8A3A2A; --push:#2F5D62; --pull:#41508A;
+  --shoulder:#8A6110; --core:#4B6B45;
+  --pad:1.1rem; --shadow:rgba(23,23,26,.13);
+}
+
+/* dark theme — same token names, redefined. Accent splits in two here: --plum
+   stays light enough to read as text, --plum-fill stays dark enough to carry
+   white text as a background. */
+:root[data-theme="dark"]{
+  --paper:#151412; --card:#211F1D; --ink:#E9E6DF; --mute:#A29C93;
+  --rule:#37342E; --plum:#E39AB8; --plum-soft:#2B1D24;
+  --plum-fill:#7E2B52; --on-plum:#FFFFFF; --plum-edge:rgba(227,154,184,.35);
+  --squat:#E39AB8; --hinge:#D98A6E; --push:#7FBAC1; --pull:#93A2E0;
+  --shoulder:#D9A93F; --core:#8FBF85; --shadow:rgba(0,0,0,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#151412; --card:#211F1D; --ink:#E9E6DF; --mute:#A29C93;
+    --rule:#37342E; --plum:#E39AB8; --plum-soft:#2B1D24;
+    --plum-fill:#7E2B52; --on-plum:#FFFFFF; --plum-edge:rgba(227,154,184,.35);
+    --squat:#E39AB8; --hinge:#D98A6E; --push:#7FBAC1; --pull:#93A2E0;
+    --shoulder:#D9A93F; --core:#8FBF85; --shadow:rgba(0,0,0,.5);
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Public Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.5;
+}
+.wrap{max-width:38rem;margin:0 auto;padding:0 1rem 5rem}
+h1,h2,h3,.num{font-family:Archivo,"Public Sans",sans-serif}
+a{color:var(--plum)}
+
+/* masthead */
+.mast{padding:1.6rem 0 .9rem}
+.mast h1{font-size:1.55rem;line-height:1.1;margin:0 0 .3rem;font-weight:700;letter-spacing:-.01em}
+.mast p{margin:0;color:var(--mute);font-size:.9rem;max-width:30rem}
+
+/* pickers */
+.picker{position:sticky;top:0;z-index:5;background:var(--paper);padding:.5rem 0 .6rem;
+  box-shadow:0 .6rem .6rem -.6rem var(--shadow)}
+.pickrow{display:flex;gap:.4rem;margin-bottom:.4rem}
+.pickrow:last-child{margin-bottom:0}
+.tab{flex:1;appearance:none;border:1px solid var(--rule);background:var(--card);
+  color:var(--ink);font:inherit;font-size:.85rem;padding:.5rem .3rem;border-radius:.4rem;
+  cursor:pointer;text-align:center;line-height:1.25}
+.tab b{display:block;font-family:Archivo;font-weight:600;font-size:.95rem}
+.tab small{color:var(--mute);font-size:.72rem}
+.tab[aria-pressed="true"]{background:var(--plum-fill);border-color:var(--plum-fill);color:var(--on-plum)}
+.tab[aria-pressed="true"] small{color:#E7D2DD}
+.tab:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+/* blocks */
+.lede{background:var(--plum-soft);border-left:3px solid var(--plum);
+  padding:.75rem .9rem;margin:1rem 0;font-size:.92rem}
+.lede p{margin:0 0 .5rem}
+.lede p:last-child{margin:0}
+.lede span{color:var(--plum);font-weight:600}
+
+h2{font-size:1.05rem;font-weight:600;margin:1.9rem 0 .1rem}
+.sub{color:var(--mute);font-size:.85rem;margin:.15rem 0 .7rem}
+
+ol.list{list-style:none;margin:0;padding:0}
+li.ex{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--rule);
+  border-radius:.35rem;margin-bottom:.4rem;overflow:hidden}
+li.ex[data-p="squat"]{border-left-color:var(--squat)}
+li.ex[data-p="hinge"]{border-left-color:var(--hinge)}
+li.ex[data-p="push"]{border-left-color:var(--push)}
+li.ex[data-p="pull"]{border-left-color:var(--pull)}
+li.ex[data-p="shoulder"]{border-left-color:var(--shoulder)}
+li.ex[data-p="core"]{border-left-color:var(--core)}
+li.ex.done{opacity:.5}
+
+.top{display:flex;align-items:flex-start;gap:.6rem;padding:.6rem .75rem}
+.check{flex:0 0 auto;width:1.6rem;height:1.6rem;margin-top:.1rem;border:1.5px solid var(--rule);
+  border-radius:.3rem;background:var(--card);cursor:pointer;color:var(--plum);
+  font-size:1rem;line-height:1;display:flex;align-items:center;justify-content:center;padding:0}
+.check:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+li.ex.done .check{background:var(--plum-fill);border-color:var(--plum-fill);color:var(--on-plum)}
+.body{flex:1;min-width:0}
+.name{font-family:Archivo;font-weight:600;font-size:1rem;line-height:1.25}
+.pat{font-size:.7rem;color:var(--mute)}
+.dose{flex:0 0 auto;font-family:Archivo;font-weight:600;font-size:1rem;
+  font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;padding-top:.05rem}
+.cue{margin:.35rem 0 0;font-size:.86rem;color:var(--mute)}
+.more{display:flex;gap:.9rem;align-items:center;padding:.1rem .75rem .6rem 3rem;font-size:.82rem}
+.more a{text-decoration:none;border-bottom:1px solid var(--plum-edge);padding-bottom:1px}
+.more button{appearance:none;background:none;border:0;padding:0;font:inherit;font-size:.82rem;
+  color:var(--mute);cursor:pointer;border-bottom:1px solid var(--rule)}
+.why{padding:0 .75rem .7rem 3rem;font-size:.82rem;color:var(--mute);font-style:italic;margin:0}
+.why[hidden]{display:none}
+
+.cardio{background:var(--plum-fill);color:var(--on-plum);border-radius:.35rem;padding:.75rem .9rem;margin-top:.5rem}
+.cardio .name{color:var(--on-plum)}
+.cardio p{margin:.3rem 0 0;font-size:.88rem;color:#EFDCE5}
+
+details.warm{background:var(--card);border:1px solid var(--rule);border-radius:.35rem;
+  padding:.55rem .75rem;margin-bottom:.3rem}
+details.warm > summary{cursor:pointer;font-family:Archivo;font-weight:600;font-size:.95rem;
+  list-style:none;display:flex;justify-content:space-between;gap:.5rem}
+details.warm > summary::-webkit-details-marker{display:none}
+details.warm > summary span{color:var(--mute);font-weight:400;font-family:"Public Sans";font-size:.82rem}
+.warmlist{margin:.6rem 0 0;padding:0;list-style:none}
+.warmlist li{display:flex;gap:.6rem;padding:.35rem 0;border-top:1px solid var(--rule);font-size:.88rem}
+.warmlist li:first-child{border-top:0}
+.warmlist .w-name{flex:1}
+.warmlist .w-dose{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.warmlist .w-cue{display:block;color:var(--mute);font-size:.8rem}
+
+.ref{background:var(--card);border:1px solid var(--rule);border-radius:.35rem;
+  padding:.8rem .9rem;margin-bottom:.5rem}
+.ref h3{margin:0 0 .35rem;font-size:.95rem;font-weight:600}
+.ref p{margin:0 0 .5rem;font-size:.88rem}
+.ref p:last-child{margin:0}
+.ref ul{margin:.2rem 0 0;padding-left:1.1rem;font-size:.88rem}
+.ref li{margin-bottom:.25rem}
+table{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:.4rem}
+th,td{text-align:left;padding:.35rem .4rem;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:600;color:var(--mute);font-size:.78rem}
+td:first-child{white-space:nowrap;font-variant-numeric:tabular-nums}
+.warn{border-left:4px solid var(--shoulder)}
+footer{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--rule);
+  font-size:.8rem;color:var(--mute)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="mast">
+  <h1>Your training plan</h1>
+  <p>Three days a week. Pick your phase, pick your day, work down the list. Tap any exercise name to see it done.</p>
+</header>
+
+<nav class="picker" aria-label="Choose a workout">
+  <div class="pickrow" id="phaseTabs" role="group" aria-label="Phase"></div>
+  <div class="pickrow" id="dayTabs" role="group" aria-label="Day"></div>
+</nav>
+
+<div class="lede" id="lede"></div>
+
+<h2>Warm-up</h2>
+<p class="sub">Same every session. Takes about seven minutes and it is the reason your shoulders stay comfortable.</p>
+<details class="warm" id="warm">
+  <summary>Seven-minute warm-up <span id="warmToggle">show</span></summary>
+  <ul class="warmlist" id="warmList"></ul>
+</details>
+
+<h2 id="dayHeading">Day A</h2>
+<p class="sub" id="daySub"></p>
+<ol class="list" id="exList"></ol>
+<div class="cardio" id="cardio"></div>
+
+<h2>Notes for this phase</h2>
+<div id="notes"></div>
+
+<h2>How hard is hard</h2>
+<div class="ref">
+  <p>Effort is measured by how many more reps you could have done. That number matters more than the weight on the dumbbell.</p>
+  <table>
+    <tr><th>Effort</th><th>What it feels like</th></tr>
+    <tr><td>5-6</td><td>Could have done 4 to 6 more reps. Where Phase 1 lives.</td></tr>
+    <tr><td>7</td><td>Could have done 3 more. Phase 2 ceiling.</td></tr>
+    <tr><td>8</td><td>Could have done 2 more. Phase 3 ceiling, and as hard as it ever needs to get.</td></tr>
+    <tr><td>9-10</td><td>Nearly or completely out of reps. Don't go here. It buys almost nothing extra and costs a lot of recovery.</td></tr>
+  </table>
+  <p style="margin-top:.6rem">For cardio, the same 1-10 scale by breathing: 3-4 means you could hold a conversation, 6 means talking is getting choppy, 8 means short phrases only.</p>
+</div>
+
+<h2>Picking a weight</h2>
+<div class="ref">
+  <p>Start lighter than you think. Being too light for two weeks costs you nothing. Being too heavy costs you a week of soreness and a lot of enthusiasm.</p>
+  <ul>
+    <li><b>Phase 1:</b> pick a weight you could do about 14 reps with, then stop at 8.</li>
+    <li><b>Phase 2:</b> a weight where you'd have 3 or 4 reps left at the end of the set.</li>
+    <li><b>Phase 3:</b> a weight where you'd have 2 reps left at the end of the set.</li>
+  </ul>
+  <p style="margin-top:.6rem"><b>Moving up:</b> when you hit the top of the rep range on every set and still had 2 reps in you, take the next dumbbell up next time and start again at the bottom of the range. Legs will climb quickly at first. Pressing will climb slowly. Both are normal.</p>
+</div>
+
+<h2>Shoulder rules</h2>
+<div class="ref warn">
+  <p>Your shoulders move further than most people's, which means the muscles have to do the job that ligaments do for everyone else. The whole upper-body plan is built around that.</p>
+  <ul>
+    <li>Palms facing each other whenever there is a choice.</li>
+    <li>On presses, stop when your upper arms reach the line of your torso. Don't chase a deeper stretch.</li>
+    <li>Don't slam your elbows into a locked position at the top of anything.</li>
+    <li>Never skip the face pulls and the external rotations, even on a short day. They are the highest-value thing you do for the joint.</li>
+  </ul>
+  <p style="margin-top:.6rem"><b>Not in this program, on purpose:</b> behind-the-neck pressing or pulling, upright rows, bench dips, chest flyes, wide-grip barbell bench, and hanging from a bar.</p>
+  <p><b>Popping and clicking without pain is fine</b> and does not mean damage. Pain, a feeling that the joint wants to slide out of place, or pins and needles down the arm means stop that exercise and get a physical therapist to look at it. One appointment is worth more than any amount of guessing.</p>
+</div>
+
+<h2>The cardio ramp</h2>
+<div class="ref">
+  <p>Intervals are introduced slowly and deliberately, and only ever on one day a week. Most people quit interval training because they were told to do 1 minute hard, 1 minute easy before they had the base for it, so effort falls apart by the third round and the whole thing feels like drowning. Long rests early are what prevent that.</p>
+  <table>
+    <tr><th>Weeks</th><th>Session</th></tr>
+    <tr><td>1-4</td><td>10 min continuous, easy enough to talk the whole time.</td></tr>
+    <tr><td>5-6</td><td>15 min continuous, last 5 min slightly harder.</td></tr>
+    <tr><td>7-8</td><td>One day: 6 x (30 sec harder / 90 sec easy). Other days stay steady.</td></tr>
+    <tr><td>9-10</td><td>One day: 8 x (30 sec harder / 90 sec easy). A second day: 5 x (1 min moderate / 1 min easy).</td></tr>
+    <tr><td>11+</td><td>One hard day: 8 x (40 sec hard / 80 sec easy). One moderate day. One easy steady day.</td></tr>
+  </table>
+  <p style="margin-top:.6rem">Use the bike for intervals. It's seated, low-impact and there's nothing to get wrong when you're breathing hard. Use the treadmill on an incline for the steady days. The elliptical works for either if you prefer it.</p>
+</div>
+
+<h2>Sticking with it</h2>
+<div class="ref">
+  <ul>
+    <li><b>Same three days, same time, on the calendar.</b> Deciding when to go is what kills programs, not the training.</li>
+    <li><b>The minimum counts.</b> If you're short on time or short on willpower: first two exercises plus five minutes of cardio, then leave. Twelve minutes. Never a zero.</li>
+    <li><b>Miss a day, do it the next day.</b> Don't stack two sessions together to catch up.</li>
+    <li><b>Write it down.</b> Weight, reps, how hard it felt. In six weeks the log is the most motivating thing you own.</li>
+    <li><b>Check in at week 4 and week 10,</b> not continuously. Day-to-day changes are noise.</li>
+  </ul>
+</div>
+
+<h2>What actually changes how you look</h2>
+<div class="ref">
+  <p>Lifting doesn't burn many calories. Three sessions a week is roughly 700 to 900 for the whole week. Its real job is keeping the muscle you already have, so the weight you lose comes off as fat and you end up looking leaner rather than smaller.</p>
+  <p>The rest comes from food and daily movement. A modest calorie deficit, enough protein to hold onto muscle, and a daily step target will each do more for the visible result than anything you could change about the training. Seven or more hours of sleep does more for recovery than any supplement.</p>
+  <p>One change at a time, though. Get the three sessions genuinely habitual first. Everything else can wait until it is.</p>
+</div>
+
+<footer>
+  <p>Video links open a YouTube search rather than one specific video, so they keep working and you can pick a demonstration that makes sense to you. Look for a coach cueing the same things listed under each exercise here.</p>
+  <p>General fitness information, not medical advice. If something hurts, stop doing it.</p>
+  <p><a href="/">← Back to the workout tracker</a></p>
+</footer>
+
+</div>
+
+<script>
+const DATA = {
+ "warmup": [
+  {
+   "name": "Easy bike or elliptical",
+   "dose": "3 min",
+   "cue": "Just get warm. Conversational pace.",
+   "why": "",
+   "url": null
+  },
+  {
+   "name": "Band or rope pull-apart",
+   "dose": "15",
+   "cue": "Arms straight, squeeze shoulder blades together.",
+   "why": "Wakes up the upper back so your shoulders sit in a better position for everything else.",
+   "url": "https://www.youtube.com/results?search_query=band+pull+apart+exercise+form"
+  },
+  {
+   "name": "Wall slide",
+   "dose": "10",
+   "cue": "Ribs down, low back flat against the wall.",
+   "why": "Teaches your shoulder blades to move with your arms instead of the joint doing all the work.",
+   "url": "https://www.youtube.com/results?search_query=wall+slide+shoulder+exercise+form"
+  },
+  {
+   "name": "Scap push-up",
+   "dose": "10",
+   "cue": "Hands on a bench. Arms stay straight; only the shoulder blades move.",
+   "why": "Trains the muscle that holds the shoulder blade against the ribs. Small movement, big payoff for loose shoulders.",
+   "url": "https://www.youtube.com/results?search_query=scapular+push+up+form"
+  },
+  {
+   "name": "Cable external rotation",
+   "dose": "12 / side",
+   "cue": "D-handle, very light. Elbow pinned to your side.",
+   "why": "Direct rotator cuff work. Boring, light, and the reason your shoulders stay happy.",
+   "url": "https://www.youtube.com/results?search_query=cable+external+rotation+rotator+cuff+form"
+  },
+  {
+   "name": "Bodyweight squat",
+   "dose": "10",
+   "cue": "Slow down, stand up tall.",
+   "why": "Rehearsal for the loaded version.",
+   "url": "https://www.youtube.com/results?search_query=bodyweight+squat+form"
+  },
+  {
+   "name": "Glute bridge",
+   "dose": "10",
+   "cue": "Squeeze at the top for a second.",
+   "why": "Gets the glutes firing before you ask them to do real work.",
+   "url": "https://www.youtube.com/results?search_query=glute+bridge+exercise+form"
+  }
+ ],
+ "phases": [
+  {
+   "id": 1,
+   "name": "Phase 1",
+   "weeks": "Weeks 1-4",
+   "meta": "3 days/week - about 35 min - alternate A and B",
+   "goal": "Show up and learn the movements. This is meant to feel easy. If you finish thinking \"that was it?\", it is working.",
+   "rpe": "Never harder than a 6 out of 10. Stop every set with about 6 reps still in the tank.",
+   "rotation": "Week 1: A - B - A. Week 2: B - A - B. Keep alternating.",
+   "days": [
+    {
+     "id": "A",
+     "title": "Day A",
+     "exercises": [
+      {
+       "name": "Goblet squat",
+       "dose": "2 x 8",
+       "pattern": "squat",
+       "patternLabel": "Legs - squat",
+       "cue": "Dumbbell held at your chest. Sit down between your knees.",
+       "why": "The most beginner-friendly squat there is. Holding the weight in front automatically keeps your chest up.",
+       "url": "https://www.youtube.com/results?search_query=goblet+squat+form"
+      },
+      {
+       "name": "DB bench press",
+       "dose": "2 x 8",
+       "pattern": "push",
+       "patternLabel": "Push",
+       "cue": "Palms facing each other. Stop when your upper arms reach the line of your torso - no lower.",
+       "why": "Main upper-body push. Neutral grip and a shortened range keep it shoulder-friendly.",
+       "url": "https://www.youtube.com/results?search_query=neutral+grip+dumbbell+bench+press+form"
+      },
+      {
+       "name": "Chest-supported DB row",
+       "dose": "2 x 10",
+       "pattern": "pull",
+       "patternLabel": "Pull",
+       "cue": "Bench at 45 degrees, lie face down. Pull elbows back, not up.",
+       "why": "Upper back work with zero load on your lower back, and the bench stops you from cheating.",
+       "url": "https://www.youtube.com/results?search_query=chest+supported+dumbbell+row+incline+bench"
+      },
+      {
+       "name": "Rope face pull",
+       "dose": "2 x 12",
+       "pattern": "shoulder",
+       "patternLabel": "Shoulder health",
+       "cue": "Rope at face height. Pull to your forehead, thumbs back.",
+       "why": "The single most valuable exercise in this program for your shoulders. Builds the muscles that hold the joint together.",
+       "url": "https://www.youtube.com/results?search_query=rope+face+pull+form"
+      },
+      {
+       "name": "Dead bug",
+       "dose": "2 x 8 / side",
+       "pattern": "core",
+       "patternLabel": "Core",
+       "cue": "Low back stays flat on the floor the whole time.",
+       "why": "Core control without crunching your spine.",
+       "url": "https://www.youtube.com/results?search_query=dead+bug+exercise+form"
+      }
+     ],
+     "cardio": {
+      "label": "10 min easy",
+      "detail": "Bike or elliptical, RPE 3-4. You should be able to hold a conversation the entire time."
+     }
+    },
+    {
+     "id": "B",
+     "title": "Day B",
+     "exercises": [
+      {
+       "name": "DB Romanian deadlift",
+       "dose": "2 x 8",
+       "pattern": "hinge",
+       "patternLabel": "Legs - hinge",
+       "cue": "Push hips back, soft knees. Stop when you feel the stretch in your hamstrings.",
+       "why": "Main hamstring and glute builder. Teaches the hip hinge, which is the most useful movement pattern outside the gym.",
+       "url": "https://www.youtube.com/results?search_query=dumbbell+romanian+deadlift+form"
+      },
+      {
+       "name": "Cable lat pulldown",
+       "dose": "2 x 10",
+       "pattern": "pull",
+       "patternLabel": "Pull",
+       "cue": "Two D-handles, palms facing each other. Don't let your shoulders shrug up at the top.",
+       "why": "Vertical pull for the back. Neutral D-handles keep the shoulder out of its loose end range.",
+       "url": "https://www.youtube.com/results?search_query=neutral+grip+lat+pulldown+form"
+      },
+      {
+       "name": "DB hip thrust",
+       "dose": "2 x 10",
+       "pattern": "hinge",
+       "patternLabel": "Legs - hinge",
+       "cue": "Shoulder blades on the bench, dumbbell on your hips. Squeeze glutes at the top.",
+       "why": "The best direct glute exercise available with dumbbells.",
+       "url": "https://www.youtube.com/results?search_query=dumbbell+hip+thrust+form+bench"
+      },
+      {
+       "name": "Cable external rotation",
+       "dose": "2 x 12 / side",
+       "pattern": "shoulder",
+       "patternLabel": "Shoulder health",
+       "cue": "Elbow at your side, forearm rotates out. Light weight, slow.",
+       "why": "Direct rotator cuff work. Boring, light, and the reason your shoulders stay happy.",
+       "url": "https://www.youtube.com/results?search_query=cable+external+rotation+rotator+cuff+form"
+      },
+      {
+       "name": "Plank",
+       "dose": "2 x 20 sec",
+       "pattern": "core",
+       "patternLabel": "Core",
+       "cue": "Squeeze glutes, don't let your hips sag.",
+       "why": "Whole-body bracing.",
+       "url": "https://www.youtube.com/results?search_query=plank+exercise+form"
+      }
+     ],
+     "cardio": {
+      "label": "10 min easy",
+      "detail": "Bike or elliptical, RPE 3-4. No intervals at all this month."
+     }
+    }
+   ],
+   "notes": [
+    {
+     "title": "Picking weights",
+     "body": "Pick something you could do about 14 reps with, then stop at 8. Too light is the correct mistake this month."
+    },
+    {
+     "title": "Soreness",
+     "body": "You'll be sore after the first session or two. It gets dramatically better by session three and mostly stops after that."
+    },
+    {
+     "title": "Short on time",
+     "body": "Do the first two exercises plus 5 minutes of cardio and call it done. Never a zero."
+    },
+    {
+     "title": "Log it",
+     "body": "Write down weight, reps and how hard it felt. Next month you'll want the comparison."
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "name": "Phase 2",
+   "weeks": "Weeks 5-10",
+   "meta": "3 days/week - about 45 min - rotate A, B, C",
+   "goal": "Add a third session and start real conditioning. Same movements as Phase 1 plus a few, so there's nothing new to learn.",
+   "rpe": "Never harder than a 7 out of 10 on lifts. Stop every set with 3-4 reps still in the tank.",
+   "rotation": "Rotate A - B - C every week, on non-consecutive days.",
+   "days": [
+    {
+     "id": "A",
+     "title": "Day A",
+     "exercises": [
+      {
+       "name": "Goblet squat",
+       "dose": "3 x 8-10",
+       "pattern": "squat",
+       "patternLabel": "Legs - squat",
+       "cue": "Chest tall, heels down.",
+       "why": "The most beginner-friendly squat there is. Holding the weight in front automatically keeps your chest up.",
+       "url": "https://www.youtube.com/results?search_query=goblet+squat+form"
+      },
+      {
+       "name": "DB bench press",
+       "dose": "3 x 8-10",
+       "pattern": "push",
+       "patternLabel": "Push",
+       "cue": "Neutral grip. Upper arms stop level with your torso.",
+       "why": "Main upper-body push. Neutral grip and a shortened range keep it shoulder-friendly.",
+       "url": "https://www.youtube.com/results?search_query=neutral+grip+dumbbell+bench+press+form"
+      },
+      {
+       "name": "Chest-supported DB row",
+       "dose": "2 x 10-12",
+       "pattern": "pull",
+       "patternLabel": "Pull",
+       "cue": "Bench at 45 degrees. Elbows back and down.",
+       "why": "Upper back work with zero load on your lower back, and the bench stops you from cheating.",
+       "url": "https://www.youtube.com/results?search_query=chest+supported+dumbbell+row+incline+bench"
+      },
+      {
+       "name": "DB hip thrust",
+       "dose": "2 x 10-12",
+       "pattern": "hinge",
+       "patternLabel": "Legs - hinge",
+       "cue": "Chin tucked, ribs down, full squeeze at the top.",
+       "why": "The best direct glute exercise available with dumbbells.",
+       "url": "https://www.youtube.com/results?search_query=dumbbell+hip+thrust+form+bench"
+      },
+      {
+       "name": "Rope face pull",
+       "dose": "2 x 12-15",
+       "pattern": "shoulder",
+       "patternLabel": "Shoulder health",
+       "cue": "Never skip this one.",
+       "why": "The single most valuable exercise in this program for your shoulders. Builds the muscles that hold the joint together.",
+       "url": "https://www.youtube.com/results?search_query=rope+face+pull+form"
+      },
+      {
+       "name": "Dead bug",
+       "dose": "2 x 8 / side",
+       "pattern": "core",
+       "patternLabel": "Core",
+       "cue": "Slow, controlled, low back flat.",
+       "why": "Core control without crunching your spine.",
+       "url": "https://www.youtube.com/results?search_query=dead+bug+exercise+form"
+      }
+     ],
+     "cardio": {
+      "label": "See the cardio ramp",
+      "detail": "Weeks 5-6: 15 min steady. Weeks 7-8: 6 x (30 sec harder / 90 sec easy). Weeks 9-10: 8 x (30 sec harder / 90 sec easy)."
+     }
+    },
+    {
+     "id": "B",
+     "title": "Day B",
+     "exercises": [
+      {
+       "name": "DB Romanian deadlift",
+       "dose": "3 x 8-10",
+       "pattern": "hinge",
+       "patternLabel": "Legs - hinge",
+       "cue": "Hips back, bar path close to your legs.",
+       "why": "Main hamstring and glute builder. Teaches the hip hinge, which is the most useful movement pattern outside the gym.",
+       "url": "https://www.youtube.com/results?search_query=dumbbell+romanian+deadlift+form"
+      },
+      {
+       "name": "Cable lat pulldown",
+       "dose": "3 x 10",
+       "pattern": "pull",
+       "patternLabel": "Pull",
+       "cue": "D-handles, neutral grip, no dead-hang stretch at the top.",
+       "why": "Vertical pull for the back. Neutral D-handles keep the shoulder out of its loose end range.",
+       "url": "https://www.youtube.com/results?search_query=neutral+grip+lat+pulldown+form"
+      },
+      {
+       "name": "Incline DB press",
+       "dose": "2 x 8-10",
+       "pattern": "push",
+       "patternLabel": "Push",
+       "cue": "Bench at 45-60 degrees, palms facing each other.",
+       "why": "Pressing angle that hits the shoulders and upper chest without going fully overhead.",
+       "url": "https://www.youtube.com/results?search_query=incline+dumbbell+press+form"
+      },
+      {
+       "name": "DB reverse lunge",
+       "dose": "2 x 8 / leg",
+       "pattern": "squat",
+       "patternLabel": "Legs - squat",
+       "cue": "Step back, not forward. Front shin near vertical.",
+       "why": "Single-leg work that's much easier on the knees than a forward lunge.",
+       "url": "https://www.youtube.com/results?search_query=dumbbell+reverse+lunge+form"
+      },
+      {
+       "name": "Rope face pull",
+       "dose": "2 x 12-15",
+       "pattern": "shoulder",
+       "patternLabel": "Shoulder health",
+       "cue": "Pull to your forehead, thumbs back.",
+       "why": "The single most valuable exercise in this program for your shoulders. Builds the muscles that hold the joint together.",
+       "url": "https://www.youtube.com/results?search_query=rope+face+pull+form"
+      },
+      {
+       "name": "Cable external rotation",
+       "dose": "2 x 12 / side",
+       "pattern": "shoulder",
+       "patternLabel": "Shoulder health",
+       "cue": "Light and slow. This is control work, not strength work.",
+       "why": "Direct rotator cuff work. Boring, light, and the reason your shoulders stay happy.",
+       "url": "https://www.youtube.com/results?search_query=cable+external+rotation+rotator+cuff+form"
+      }
+     ],
+     "cardio": {
+      "label": "15-20 min steady",
+      "detail": "Incline walk on the treadmill or the bike. RPE 4-5. Should feel easy-moderate."
+     }
+    },
+    {
+     "id": "C",
+     "title": "Day C",
+     "exercises": [
+      {
+       "name": "DB split squat",
+       "dose": "3 x 8 / leg",
+       "pattern": "squat",
+       "patternLabel": "Legs - squat",
+       "cue": "Back foot on the floor to start. Straight up and down.",
+       "why": "Single-leg strength and balance. Also exposes and fixes side-to-side differences.",
+       "url": "https://www.youtube.com/results?search_query=dumbbell+split+squat+form"
+      },
+      {
+       "name": "Cable seated row",
+       "dose": "3 x 10-12",
+       "pattern": "pull",
+       "patternLabel": "Pull",
+       "cue": "Rope handle, elbows at ribs, squeeze the shoulder blades.",
+       "why": "Horizontal pull. Pair for all the pressing.",
+       "url": "https://www.youtube.com/results?search_query=cable+seated+row+form"
+      },
+      {
+       "name": "DB hip thrust",
+       "dose": "2 x 12",
+       "pattern": "hinge",
+       "patternLabel": "Legs - hinge",
+       "cue": "Same as Day A.",
+       "why": "The best direct glute exercise available with dumbbells.",
+       "url": "https://www.youtube.com/results?search_query=dumbbell+hip+thrust+form+bench"
+      },
+      {
+       "name": "Suitcase carry",
+       "dose": "2 x 40 steps",
+       "pattern": "core",
+       "patternLabel": "Core",
+       "cue": "One heavy dumbbell, one side. Don't lean. Switch hands halfway.",
+       "why": "Carrying heavy weight on one side forces your whole trunk to resist bending. Under-rated and very effective.",
+       "url": "https://www.youtube.com/results?search_query=suitcase+carry+exercise+form"
+      },
+      {
+       "name": "Rope face pull",
+       "dose": "2 x 12-15",
+       "pattern": "shoulder",
+       "patternLabel": "Shoulder health",
+       "cue": "",
+       "why": "The single most valuable exercise in this program for your shoulders. Builds the muscles that hold the joint together.",
+       "url": "https://www.youtube.com/results?search_query=rope+face+pull+form"
+      },
+      {
+       "name": "Cable external rotation",
+       "dose": "2 x 12 / side",
+       "pattern": "shoulder",
+       "patternLabel": "Shoulder health",
+       "cue": "",
+       "why": "Direct rotator cuff work. Boring, light, and the reason your shoulders stay happy.",
+       "url": "https://www.youtube.com/results?search_query=cable+external+rotation+rotator+cuff+form"
+      }
+     ],
+     "cardio": {
+      "label": "Weeks 9-10 only",
+      "detail": "5 x (1 min moderate / 1 min easy). Before week 9, just do 15 min steady."
+     }
+    }
+   ],
+   "notes": [
+    {
+     "title": "Progression",
+     "body": "When you hit the top of the rep range on every set and still had 2 reps left, go up to the next dumbbell next time and start again at the bottom of the range."
+    },
+    {
+     "title": "Cardio ramp",
+     "body": "Intervals go on ONE day a week to start. Long rests are deliberate - they let you actually work during the hard part."
+    },
+    {
+     "title": "Shoulders",
+     "body": "Neutral grip whenever there's a choice. Nothing overhead to a hard lockout. Painless clicking is fine; pain or a slipping feeling is not."
+    },
+    {
+     "title": "Short on time",
+     "body": "First three exercises plus the cardio. Cut from the bottom of the list, never the top."
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "name": "Phase 3",
+   "weeks": "Week 11 onward",
+   "meta": "3 days/week - about 55 min - rotate A, B, C",
+   "goal": "The long-term program. This is the one you stay on. Progress now comes from adding weight, not from adding exercises.",
+   "rpe": "Never harder than an 8 out of 10 on lifts. Always leave 2 reps in the tank. No training to failure.",
+   "rotation": "Rotate A - B - C every week, on non-consecutive days.",
+   "days": [
+    {
+     "id": "A",
+     "title": "Day A",
+     "exercises": [
+      {
+       "name": "Goblet squat",
+       "dose": "3 x 8-10",
+       "pattern": "squat",
+       "patternLabel": "Legs - squat",
+       "cue": "Chest tall, heels down, full depth if it's comfortable.",
+       "why": "The most beginner-friendly squat there is. Holding the weight in front automatically keeps your chest up.",
+       "url": "https://www.youtube.com/results?search_query=goblet+squat+form"
+      },
+      {
+       "name": "DB bench press",
+       "dose": "3 x 8-10",
+       "pattern": "push",
+       "patternLabel": "Push",
+       "cue": "Neutral grip, upper arms stop level with the torso.",
+       "why": "Main upper-body push. Neutral grip and a shortened range keep it shoulder-friendly.",
+       "url": "https://www.youtube.com/results?search_query=neutral+grip+dumbbell+bench+press+form"
+      },
+      {
+       "name": "Chest-supported DB row",
+       "dose": "3 x 10-12",
+       "pattern": "pull",
+       "patternLabel": "Pull",
+       "cue": "Bench at 45 degrees.",
+       "why": "Upper back work with zero load on your lower back, and the bench stops you from cheating.",
+       "url": "https://www.youtube.com/results?search_query=chest+supported+dumbbell+row+incline+bench"
+      },
+      {
+       "name": "DB hip thrust",
+       "dose": "3 x 10-12",
+       "pattern": "hinge",
+       "patternLabel": "Legs - hinge",
+       "cue": "The main glute lift. Push through your heels.",
+       "why": "The best direct glute exercise available with dumbbells.",
+       "url": "https://www.youtube.com/results?search_query=dumbbell+hip+thrust+form+bench"
+      },
+      {
+       "name": "Rope face pull",
+       "dose": "2 x 15",
+       "pattern": "shoulder",
+       "patternLabel": "Shoulder health",
+       "cue": "",
+       "why": "The single most valuable exercise in this program for your shoulders. Builds the muscles that hold the joint together.",
+       "url": "https://www.youtube.com/results?search_query=rope+face+pull+form"
+      },
+      {
+       "name": "Pallof press",
+       "dose": "2 x 10 / side",
+       "pattern": "core",
+       "patternLabel": "Core",
+       "cue": "Stand side-on to the cable, press straight out, resist the twist.",
+       "why": "Anti-rotation core work. Directly transfers to keeping a stable trunk under load.",
+       "url": "https://www.youtube.com/results?search_query=pallof+press+form"
+      }
+     ],
+     "cardio": {
+      "label": "Intervals - 16 min",
+      "detail": "8 x (40 sec hard / 80 sec easy) on the bike, plus a few minutes easy either side. This is the hard day."
+     }
+    },
+    {
+     "id": "B",
+     "title": "Day B",
+     "exercises": [
+      {
+       "name": "DB Romanian deadlift",
+       "dose": "3 x 8-10",
+       "pattern": "hinge",
+       "patternLabel": "Legs - hinge",
+       "cue": "Hips back, flat back, controlled on the way down.",
+       "why": "Main hamstring and glute builder. Teaches the hip hinge, which is the most useful movement pattern outside the gym.",
+       "url": "https://www.youtube.com/results?search_query=dumbbell+romanian+deadlift+form"
+      },
+      {
+       "name": "Cable lat pulldown",
+       "dose": "3 x 8-12",
+       "pattern": "pull",
+       "patternLabel": "Pull",
+       "cue": "D-handles, neutral grip.",
+       "why": "Vertical pull for the back. Neutral D-handles keep the shoulder out of its loose end range.",
+       "url": "https://www.youtube.com/results?search_query=neutral+grip+lat+pulldown+form"
+      },
+      {
+       "name": "Seated DB press",
+       "dose": "3 x 10",
+       "pattern": "push",
+       "patternLabel": "Push",
+       "cue": "Optional. Neutral grip, don't lock out hard. Skip permanently if the shoulder complains.",
+       "why": "Optional overhead pressing. Only if the shoulders are completely symptom-free.",
+       "url": "https://www.youtube.com/results?search_query=seated+neutral+grip+dumbbell+press+form"
+      },
+      {
+       "name": "DB reverse lunge",
+       "dose": "3 x 8 / leg",
+       "pattern": "squat",
+       "patternLabel": "Legs - squat",
+       "cue": "Step back, control the descent.",
+       "why": "Single-leg work that's much easier on the knees than a forward lunge.",
+       "url": "https://www.youtube.com/results?search_query=dumbbell+reverse+lunge+form"
+      },
+      {
+       "name": "Rope face pull",
+       "dose": "2 x 15",
+       "pattern": "shoulder",
+       "patternLabel": "Shoulder health",
+       "cue": "",
+       "why": "The single most valuable exercise in this program for your shoulders. Builds the muscles that hold the joint together.",
+       "url": "https://www.youtube.com/results?search_query=rope+face+pull+form"
+      },
+      {
+       "name": "Side plank",
+       "dose": "2 x 30 sec / side",
+       "pattern": "core",
+       "patternLabel": "Core",
+       "cue": "Hips stacked and lifted.",
+       "why": "Side core and hip stability.",
+       "url": "https://www.youtube.com/results?search_query=side+plank+form"
+      }
+     ],
+     "cardio": {
+      "label": "20 min steady",
+      "detail": "Incline walk, RPE 4-5. Easy day on purpose - it's what makes the interval day possible."
+     }
+    },
+    {
+     "id": "C",
+     "title": "Day C",
+     "exercises": [
+      {
+       "name": "DB split squat",
+       "dose": "3 x 8 / leg",
+       "pattern": "squat",
+       "patternLabel": "Legs - squat",
+       "cue": "Progress to a rear-foot-elevated version when it feels easy.",
+       "why": "Single-leg strength and balance. Also exposes and fixes side-to-side differences.",
+       "url": "https://www.youtube.com/results?search_query=dumbbell+split+squat+form"
+      },
+      {
+       "name": "Incline DB press",
+       "dose": "3 x 8-10",
+       "pattern": "push",
+       "patternLabel": "Push",
+       "cue": "Bench 45-60 degrees, neutral grip.",
+       "why": "Pressing angle that hits the shoulders and upper chest without going fully overhead.",
+       "url": "https://www.youtube.com/results?search_query=incline+dumbbell+press+form"
+      },
+      {
+       "name": "Cable seated row",
+       "dose": "3 x 10-12",
+       "pattern": "pull",
+       "patternLabel": "Pull",
+       "cue": "Rope handle, elbows at ribs.",
+       "why": "Horizontal pull. Pair for all the pressing.",
+       "url": "https://www.youtube.com/results?search_query=cable+seated+row+form"
+      },
+      {
+       "name": "Single-leg Romanian deadlift",
+       "dose": "3 x 8 / leg",
+       "pattern": "hinge",
+       "patternLabel": "Legs - hinge",
+       "cue": "Light. Balance is the point; hold the frame if you need to.",
+       "why": "Hinge plus balance plus hip stability in one. Keep it light.",
+       "url": "https://www.youtube.com/results?search_query=single+leg+romanian+deadlift+dumbbell+form"
+      },
+      {
+       "name": "Rope face pull",
+       "dose": "2 x 15",
+       "pattern": "shoulder",
+       "patternLabel": "Shoulder health",
+       "cue": "",
+       "why": "The single most valuable exercise in this program for your shoulders. Builds the muscles that hold the joint together.",
+       "url": "https://www.youtube.com/results?search_query=rope+face+pull+form"
+      },
+      {
+       "name": "Suitcase carry",
+       "dose": "3 x 40 steps",
+       "pattern": "core",
+       "patternLabel": "Core",
+       "cue": "Heavy. Stay upright.",
+       "why": "Carrying heavy weight on one side forces your whole trunk to resist bending. Under-rated and very effective.",
+       "url": "https://www.youtube.com/results?search_query=suitcase+carry+exercise+form"
+      }
+     ],
+     "cardio": {
+      "label": "10 min moderate",
+      "detail": "5 x (1 min moderate / 1 min easy). Middle-difficulty day."
+     }
+    }
+   ],
+   "notes": [
+    {
+     "title": "Progression",
+     "body": "Top of the rep range, every set, 2 reps left in the tank - then go up a dumbbell and start again at the bottom of the range."
+    },
+    {
+     "title": "Deload",
+     "body": "Every 8th week or any week you feel beat up: 2 sets instead of 3, about 70% of your usual weight, skip the intervals."
+    },
+    {
+     "title": "One hard day",
+     "body": "Only Day A is hard cardio. Three interval days a week is how people burn out and quit."
+    },
+    {
+     "title": "What actually drives fat loss",
+     "body": "Training keeps the muscle you have while you lose fat. Diet and daily steps do the rest. Protein and sleep matter more than any exercise choice here."
+    }
+   ]
+  }
+ ]
+};
+let pi = 0, di = 0;
+const $ = id => document.getElementById(id);
+const done = new Set();
+
+function esc(s){return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+function renderTabs(){
+  $('phaseTabs').innerHTML = DATA.phases.map((p,i)=>
+    `<button class="tab" role="button" aria-pressed="${i===pi}" data-phase="${i}">
+      <b>${esc(p.name)}</b><small>${esc(p.weeks)}</small></button>`).join('');
+  const days = DATA.phases[pi].days;
+  $('dayTabs').innerHTML = days.map((d,i)=>
+    `<button class="tab" role="button" aria-pressed="${i===di}" data-day="${i}">
+      <b>${esc(d.title)}</b></button>`).join('');
+}
+
+function renderWarmup(){
+  $('warmList').innerHTML = DATA.warmup.map(w=>`
+    <li><span class="w-name">${w.url?`<a href="${w.url}" target="_blank" rel="noopener">${esc(w.name)}</a>`:esc(w.name)}
+      <span class="w-cue">${esc(w.cue)}</span></span>
+      <span class="w-dose">${esc(w.dose)}</span></li>`).join('');
+}
+
+function renderDay(){
+  const ph = DATA.phases[pi];
+  if(di >= ph.days.length) di = 0;
+  const d = ph.days[di];
+  $('lede').innerHTML =
+    `<p><span>The point of this phase.</span> ${esc(ph.goal)}</p>
+     <p><span>Effort ceiling.</span> ${esc(ph.rpe)}</p>
+     <p><span>Order.</span> ${esc(ph.rotation)} About ${esc(ph.meta.split(' - ')[1])} including warm-up and cardio.</p>`;
+  $('dayHeading').textContent = ph.name + ', ' + d.title;
+  $('daySub').textContent = 'Rest about 90 seconds between sets on the first three exercises, 60 seconds after that.';
+  $('exList').innerHTML = d.exercises.map((e,i)=>{
+    const key = pi+'-'+di+'-'+i;
+    return `<li class="ex${done.has(key)?' done':''}" data-p="${e.pattern}" data-key="${key}">
+      <div class="top">
+        <button class="check" aria-label="Mark ${esc(e.name)} done" data-check="${key}">${done.has(key)?'&#10003;':''}</button>
+        <div class="body">
+          <div class="name">${esc(e.name)}</div>
+          <div class="pat">${esc(e.patternLabel)}</div>
+          ${e.cue?`<p class="cue">${esc(e.cue)}</p>`:''}
+        </div>
+        <div class="dose">${esc(e.dose)}</div>
+      </div>
+      <div class="more">
+        ${e.url?`<a href="${e.url}" target="_blank" rel="noopener">Watch how</a>`:''}
+        ${e.why?`<button data-why="${key}">Why this one</button>`:''}
+      </div>
+      ${e.why?`<p class="why" id="why-${key}" hidden>${esc(e.why)}</p>`:''}
+    </li>`;
+  }).join('');
+  $('cardio').innerHTML = `<div class="name">${esc(d.cardio.label)}</div><p>${esc(d.cardio.detail)}</p>`;
+  $('notes').innerHTML = ph.notes.map(n=>
+    `<div class="ref"><h3>${esc(n.title)}</h3><p>${esc(n.body)}</p></div>`).join('');
+}
+
+document.addEventListener('click', ev => {
+  const p = ev.target.closest('[data-phase]');
+  if(p){ pi = +p.dataset.phase; di = 0; renderTabs(); renderDay(); window.scrollTo({top:0}); return; }
+  const dd = ev.target.closest('[data-day]');
+  if(dd){ di = +dd.dataset.day; renderTabs(); renderDay(); return; }
+  const c = ev.target.closest('[data-check]');
+  if(c){
+    const k = c.dataset.check;
+    if(done.has(k)) done.delete(k); else done.add(k);
+    const li = document.querySelector(`li[data-key="${k}"]`);
+    li.classList.toggle('done', done.has(k));
+    c.innerHTML = done.has(k) ? '&#10003;' : '';
+    return;
+  }
+  const w = ev.target.closest('[data-why]');
+  if(w){
+    const el = $('why-'+w.dataset.why);
+    el.hidden = !el.hidden;
+    w.textContent = el.hidden ? 'Why this one' : 'Hide';
+  }
+});
+
+$('warm').addEventListener('toggle', e => {
+  $('warmToggle').textContent = e.target.open ? 'hide' : 'show';
+});
+
+renderTabs(); renderWarmup(); renderDay();
+</script>
+</body>
+</html>
